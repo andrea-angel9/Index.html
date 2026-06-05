@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FONDO XII Gruppo Caccia — Gestionale</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#1B6B3A;--gd:#0D4A26;--gm:#2D8A50;--gl:#E8F5ED;--ga:#4CAF72;
+  --border:#C8E6D0;--txt:#111;--txt2:#444;--txt3:#777;
+  --card:#fff;--bg:#F0F7F2;--red:#C0392B;--warn:#E67E22
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+
+/* ═══ LOGIN SCREEN ═══ */
+#login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:var(--gd);
+  background:linear-gradient(135deg,var(--gd) 0%,#1B6B3A 60%,#2D8A50 100%);
+  position:fixed;inset:0;z-index:9999;
+  transition:opacity .4s,transform .4s
+}
+#login-screen.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.login-box{
+  background:#fff;border-radius:18px;padding:2.5rem 2.2rem;width:min(90vw,380px);
+  box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center
+}
+.login-emblem{
+  width:72px;height:72px;background:var(--g);border-radius:16px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;
+  box-shadow:0 8px 24px rgba(27,107,58,.35)
+}
+.login-emblem i{font-size:36px;color:#fff}
+.login-box h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--gd);line-height:1}
+.login-box p{font-size:12px;color:var(--txt3);letter-spacing:1px;margin-top:4px;margin-bottom:1.8rem}
+.login-field{position:relative;margin-bottom:1rem}
+.login-field input{
+  width:100%;border:2px solid var(--border);border-radius:10px;
+  padding:12px 44px 12px 14px;font-family:'Outfit',sans-serif;font-size:15px;
+  outline:none;transition:border .2s;background:#FAFDF9
+}
+.login-field input:focus{border-color:var(--g)}
+.login-field .eye{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--txt3);font-size:18px;padding:0
+}
+.login-btn{
+  width:100%;background:var(--g);color:#fff;border:none;border-radius:10px;
+  padding:13px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;letter-spacing:.5px;transition:all .2s;margin-top:.3rem
+}
+.login-btn:hover{background:var(--gd);transform:translateY(-1px)}
+.login-btn:active{transform:translateY(0)}
+.login-err{
+  background:#FEF0F0;border:1px solid #FADBD8;border-radius:8px;
+  padding:8px 12px;font-size:12px;color:var(--red);margin-top:.8rem;
+  display:none;align-items:center;gap:6px
+}
+.login-err.show{display:flex}
+.login-footer{margin-top:1.5rem;font-size:11px;color:var(--txt3)}
+
+/* ═══ APP ═══ */
+#app-screen{display:none}
+#app-screen.visible{display:block}
+
+.app{max-width:1180px;margin:0 auto;padding-bottom:2.5rem}
+.header{background:var(--gd);overflow:hidden;position:relative}
+.header::before{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border:40px solid rgba(255,255,255,.04);border-radius:50%}
+.hi{display:flex;align-items:center;justify-content:space-between;padding:1.3rem 1.6rem;position:relative;z-index:1}
+.logo{display:flex;align-items:center;gap:14px}
+.loge{width:52px;height:52px;background:var(--gm);border:2px solid var(--ga);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.loge i{font-size:24px;color:#fff}
+.logt h1{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:#fff;line-height:1}
+.logt p{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:2px;margin-top:3px}
+.hmeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.hb{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 12px;color:rgba(255,255,255,.85);font-size:12px;font-weight:500;display:flex;align-items:center;gap:5px}
+.logout-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 12px;color:rgba(255,255,255,.8);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:'Outfit',sans-serif;transition:all .2s}
+.logout-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+
+.nav{background:var(--g);display:flex;padding:0 1.6rem;gap:2px;flex-wrap:wrap}
+.nb{background:none;border:none;color:rgba(255,255,255,.6);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;padding:11px 18px;cursor:pointer;border-bottom:3px solid transparent;transition:all .18s;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.nb:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nb.active{color:#fff;border-bottom-color:var(--ga);background:rgba(255,255,255,.08)}
+
+.content{padding:1.4rem 1.4rem 0}
+.section{display:none}.section.active{display:block}
+
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:1.2rem}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gm)}
+.klabel{font-size:10px;color:var(--txt3);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px}
+.kval{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gd);line-height:1;letter-spacing:1px}
+.kval.neg{color:var(--red)}.kval.warn{color:var(--warn)}
+.ksub{font-size:11px;color:var(--txt3);margin-top:3px}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:1rem}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.2rem;border-bottom:1px solid var(--border)}
+.pt{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--gd);display:flex;align-items:center;gap:8px}
+.pb{padding:1rem 1.2rem}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.ox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10px;color:var(--txt3);font-weight:700;letter-spacing:.9px;text-transform:uppercase;padding:6px 9px;text-align:left;border-bottom:1.5px solid var(--border);white-space:nowrap;background:#FAFDF9}
+td{padding:7px 9px;border-bottom:1px solid #EFF6F1;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#F5FBF7}
+
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.bg{background:#D4EDDA;color:#1B6B3A}
+.br{background:#FADBD8;color:#922B21}
+.bb{background:#D6EAF8;color:#1A5276}
+.ba{background:#FDEBD0;color:#784212}
+.bp{background:#E8DAEF;color:#6C3483}
+.bgr{background:#EAECEE;color:#555}
+.bt{background:#D1F2EB;color:#0E6655}
+.bo{background:#E9F7EF;color:#196F3D}
+
+.tb{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.tb input{flex:1;min-width:180px;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'Outfit',sans-serif;font-size:13px;outline:none}
+.tb input:focus{border-color:var(--g)}
+.tb select{border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;background:#fff;outline:none}
+
+.ci{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gl);border-radius:9px;border:1px solid var(--border);margin-bottom:8px}
+.ci:last-child{margin-bottom:0}
+.clabel{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt2);font-weight:500}
+.camt{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gd);letter-spacing:1px}
+.camt.neg{color:var(--red)}
+.ci-tot{background:var(--gd)!important;border-color:var(--g)!important}
+.ci-tot .clabel{color:rgba(255,255,255,.85)}
+.ci-tot .camt{color:#fff;font-size:26px}
+
+.deb-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.deb-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F9FDF9;border-bottom:1px solid var(--border);cursor:pointer}
+.deb-head:hover{background:var(--gl)}
+.deb-nom{font-weight:700;font-size:14px;color:var(--gd)}
+.deb-tot{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--red)}
+.deb-body{display:none;padding:0}
+.deb-body.open{display:block}
+
+.toast{position:fixed;top:20px;right:20px;background:var(--gd);color:#fff;padding:10px 18px;border-radius:9px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(-10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:700px){.two{grid-template-columns:1fr}.kgrid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-emblem"><i class="ti ti-shield-chevron"></i></div>
+    <h2>FONDO XII GRUPPO CACCIA</h2>
+    <p>GESTIONALE OPERATIVO · ACCESSO RISERVATO</p>
+    <div class="login-field">
+      <input type="password" id="pwd-input" placeholder="Password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="eye" onclick="togglePwd()" id="eye-btn" title="Mostra/nascondi">
+        <i class="ti ti-eye" id="eye-icon"></i>
+      </button>
+    </div>
+    <button class="login-btn" onclick="doLogin()">
+      <i class="ti ti-lock-open" style="font-size:16px"></i> ACCEDI
+    </button>
+    <div class="login-err" id="login-err">
+      <i class="ti ti-alert-circle"></i> Password non corretta. Riprova.
+    </div>
+    <div class="login-footer">© 2026 XII Gruppo Caccia — Accesso riservato ai soci autorizzati</div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app-screen">
+<div class="app">
+  <div class="header">
+    <div class="hi">
+      <div class="logo">
+        <div class="loge"><i class="ti ti-shield-chevron"></i></div>
+        <div class="logt">
+          <h1>FONDO XII GRUPPO CACCIA</h1>
+          <p>Gestionale Operativo · Anno 2026</p>
+        </div>
+      </div>
+      <div class="hmeta">
+        <div class="hb"><i class="ti ti-database" style="font-size:13px"></i> Zite · 05/06/2026</div>
+        <div class="hb"><i class="ti ti-users" style="font-size:13px"></i> 43 soci</div>
+        <div class="hb"><i class="ti ti-coin" style="font-size:13px"></i> 10.384,12 €</div>
+        <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:13px"></i> Esci</button>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nb active" onclick="go('dash')" id="nav-dash"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+      <button class="nb" onclick="go('soci')" id="nav-soci"><i class="ti ti-users"></i> Soci</button>
+      <button class="nb" onclick="go('cassa')" id="nav-cassa"><i class="ti ti-arrows-exchange"></i> Cassa & Movimenti</button>
+      <button class="nb" onclick="go('gadget')" id="nav-gadget"><i class="ti ti-package"></i> Gadget</button>
+      <button class="nb" onclick="go('debiti')" id="nav-debiti"><i class="ti ti-receipt-2"></i> Debiti Quote</button>
+      <button class="nb" onclick="go('debgadget')" id="nav-debgadget"><i class="ti ti-shopping-bag"></i> Debiti Gadget</button>
+    </nav>
+  </div>
+
+  <div class="content">
+
+    <div class="section active" id="section-dash">
+      <div class="kgrid" id="dk"></div>
+      <div class="two" style="margin-bottom:10px">
+        <div class="panel"><div class="ph"><div class="pt"><i class="ti ti-wallet"></i> Disponibilità Conti</div></div><div class="pb" id="d-cassa"></div></div>
+        <div class="panel"><div class="ph"><div class="pt"><i class="ti ti-activity"></i> Ultimi Movimenti</div></div><div style="padding:0" id="d-mov"></div></div>
+      </div>
+      <div class="two">
+        <div class="panel"><div class="ph"><div class="pt"><i class="ti ti-alert-circle"></i> Top Quote Arretrate</div></div><div style="padding:0" id="d-qd"></div></div>
+        <div class="panel"><div class="ph"><div class="pt"><i class="ti ti-shopping-bag"></i> Top Debiti Gadget</div></div><div style="padding:0" id="d-gd"></div></div>
+      </div>
+    </div>
+
+    <div class="section" id="section-soci">
+      <div class="tb">
+        <input type="text" id="s-q" placeholder="🔍 Cerca codice, cognome, nome…" oninput="rSoci()">
+        <select id="s-st" onchange="rSoci()"><option value="">Tutti gli stati</option><option>Attivo</option><option>Uscito</option><option>Sospeso</option></select>
+        <select id="s-ca" onchange="rSoci()"><option value="">Tutte le categorie</option><option>Ordinario</option><option>Onorario</option><option>Benemerito</option><option>Esterni</option><option>Tiger</option></select>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="pt"><i class="ti ti-users"></i> Registro Soci</div><span id="s-cnt" style="font-size:12px;color:var(--txt3)"></span></div>
+        <div class="ox"><table><thead><tr><th>Codice</th><th>Cognome</th><th>Nome</th><th>Categoria</th><th>Stato</th><th>Iscrizione</th><th>Saldato fino</th><th>Debito Quote</th><th>Debito Gadget</th></tr></thead><tbody id="s-tb"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="section-cassa">
+      <div class="kgrid" id="ck"></div>
+      <div class="tb">
+        <input type="text" id="m-q" placeholder="🔍 Cerca motivazione…" oninput="rMov()">
+        <select id="m-tp" onchange="rMov()"><option value="">Tutti i tipi</option><option>Entrata</option><option>Uscita</option><option>Rettifica positiva</option><option>Rettifica negativa</option></select>
+        <select id="m-co" onchange="rMov()"><option value="">Tutti i conti</option><option>Cassaforte</option><option>Conto Bancario</option></select>
+        <select id="m-me" onchange="rMov()"><option value="">Tutti i metodi</option><option>Contanti</option><option>Bonifico</option><option>POS</option><option>Altro</option></select>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="pt"><i class="ti ti-list-details"></i> Registro Movimenti Cassa</div><span id="m-cnt" style="font-size:12px;color:var(--txt3)"></span></div>
+        <div class="ox"><table><thead><tr><th>#</th><th>Data</th><th>Tipo</th><th>Motivazione</th><th>Metodo</th><th>Importo</th><th>Conto</th></tr></thead><tbody id="m-tb"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="section-gadget">
+      <div class="kgrid" id="gk"></div>
+      <div class="tb">
+        <input type="text" id="g-q" placeholder="🔍 Cerca codice o nome…" oninput="rGad()">
+        <select id="g-ca" onchange="rGad()"><option value="">Tutte le categorie</option><option>Gadget</option><option>Abbigliamento</option><option>Patch</option><option>Vino</option></select>
+        <select id="g-di" onchange="rGad()"><option value="">Tutte le disponibilità</option><option value="disp">Disponibili</option><option value="esau">Esauriti</option><option value="cens">Da censire</option></select>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="pt"><i class="ti ti-package"></i> Catalogo Gadget</div><span id="g-cnt" style="font-size:12px;color:var(--txt3)"></span></div>
+        <div class="ox"><table><thead><tr><th>Codice</th><th>Nome</th><th>Categoria</th><th>Disponib.</th><th>Vendute</th><th>P. Soci</th><th>P. Esterni</th><th>P. Tiger</th><th>Costo</th><th>Fornitore</th></tr></thead><tbody id="g-tb"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="section-debiti">
+      <div class="kgrid" id="dqk"></div>
+      <div class="tb">
+        <input type="text" id="dq-q" placeholder="🔍 Cerca socio…" oninput="rDQ()">
+        <select id="dq-so" onchange="rDQ()"><option value="deb">Ordina per debito ↓</option><option value="cog">Ordina per cognome</option></select>
+        <select id="dq-fi" onchange="rDQ()"><option value="">Tutti</option><option value="pos">Solo con debito</option><option value="zero">Solo in pari</option></select>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="pt"><i class="ti ti-receipt-2"></i> Debiti Quote Soci Attivi</div></div>
+        <div class="ox"><table><thead><tr><th>Codice</th><th>Cognome</th><th>Nome</th><th>Categoria</th><th>Saldato fino</th><th>Debito Quote</th><th>Debito Gadget</th><th>Totale</th><th>Stato</th></tr></thead><tbody id="dq-tb"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="section-debgadget">
+      <div class="kgrid" id="dgk"></div>
+      <div id="dg-cards"></div>
+    </div>
+
+  </div>
+</div>
+</div><!-- /app-screen -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ AUTENTICAZIONE ═══
+// Hash SHA-256 della password. Per cambiarla: genera un nuovo hash su
+// https://emn178.github.io/online-tools/sha256.html e sostituisci la stringa.
+// Password attuale: XII2026
+const PASS_HASH = '3493882c33e6fd1e88e3d6a9382397c6b8c5cd93a7b9bf66abcb0ee6fc85e3ec';
+
+// Calcoliamo l'hash a runtime con SubtleCrypto (nativa nel browser, nessuna libreria)
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// Controllo sessione al caricamento
+window.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('fxii_auth')==='1') showApp();
+  document.getElementById('pwd-input').focus();
+});
+
+async function doLogin(){
+  const pwd=document.getElementById('pwd-input').value;
+  if(!pwd) return;
+  const h=await sha256(pwd);
+  if(h===PASS_HASH){
+    sessionStorage.setItem('fxii_auth','1');
+    document.getElementById('login-screen').classList.add('out');
+    setTimeout(showApp,400);
+  } else {
+    const err=document.getElementById('login-err');
+    err.classList.add('show');
+    document.getElementById('pwd-input').value='';
+    document.getElementById('pwd-input').focus();
+    setTimeout(()=>err.classList.remove('show'),3000);
+  }
+}
+
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  rDash();
+}
+
+function doLogout(){
+  sessionStorage.removeItem('fxii_auth');
+  location.reload();
+}
+
+function togglePwd(){
+  const inp=document.getElementById('pwd-input');
+  const ico=document.getElementById('eye-icon');
+  if(inp.type==='password'){inp.type='text';ico.className='ti ti-eye-off';}
+  else{inp.type='password';ico.className='ti ti-eye';}
+}
+
+// ═══ DATI ═══
+const SOCI=[{"codice": "STRALE5", "nome": "A.", "cognome": "Rossetti", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2021-12-24", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 10, "credito": 0}, {"codice": "STRALE9", "nome": "A.", "cognome": "Angelelli", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2021-04-20", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 35, "credito": 0}, {"codice": "STRALE10", "nome": "A.", "cognome": "Panzino", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2022-10-10", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE13", "nome": "R.", "cognome": "Costanza", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2021-12-13", "saldatoFino": "dicembre 2024", "debitoQuote": 90, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE14", "nome": "A.", "cognome": "Mignogna", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2022-04-04", "saldatoFino": "dicembre 2022", "debitoQuote": 210, "debitoGadget": 68, "credito": 0}, {"codice": "STRALE20", "nome": "L.", "cognome": "Perfetti", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2022-09-05", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE23", "nome": "M.", "cognome": "Rea", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2021-07-12", "saldatoFino": "dicembre 2023", "debitoQuote": 150, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE25", "nome": "C.", "cognome": "Surace", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2008-06-21", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE26", "nome": "L.", "cognome": "Scavo", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2021-10-25", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 9, "credito": 0}, {"codice": "STRALE27", "nome": "P.", "cognome": "Fanelli", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2016-08-17", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE28", "nome": "F.", "cognome": "Cacciapuoti", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2025-09-01", "saldatoFino": "—", "debitoQuote": 50, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE30", "nome": "S.", "cognome": "Grassi", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2012-09-11", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE46", "nome": "O.", "cognome": "Odesco", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2011-07-19", "saldatoFino": "dicembre 2021", "debitoQuote": 270, "debitoGadget": 25, "credito": 0}, {"codice": "STRALE54", "nome": "A.", "cognome": "Campagna", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2022-06-27", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE60", "nome": "L.", "cognome": "Castoro", "categoria": "Onorario", "stato": "Attivo", "dataIscrizione": "2009-12-10", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE67", "nome": "S.", "cognome": "Clemente", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2007-03-26", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE69", "nome": "M.", "cognome": "Dipace", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2008-05-06", "saldatoFino": "dicembre 2023", "debitoQuote": 150, "debitoGadget": 185, "credito": 0}, {"codice": "STRALE70", "nome": "A.", "cognome": "Marinelli", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2008-07-11", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE75", "nome": "M.", "cognome": "Pugliese", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2008-09-29", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE77", "nome": "A.", "cognome": "Darcangelo", "categoria": "Benemerito", "stato": "Attivo", "dataIscrizione": "2008-10-20", "saldatoFino": "giugno 2024", "debitoQuote": 120, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE84", "nome": "V.", "cognome": "Mitaritonna", "categoria": "Onorario", "stato": "Attivo", "dataIscrizione": "2012-05-17", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE86", "nome": "V.", "cognome": "Nardelli", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2011-11-01", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE87", "nome": "E.", "cognome": "Martimucci", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2013-01-28", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE88", "nome": "A.", "cognome": "Fato", "categoria": "Onorario", "stato": "Attivo", "dataIscrizione": "2007-03-26", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE90", "nome": "A.", "cognome": "Cavallo", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2022-06-01", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE91", "nome": "D.", "cognome": "Morgese", "categoria": "Onorario", "stato": "Attivo", "dataIscrizione": "2014-05-12", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE93", "nome": "N.", "cognome": "Boccardi", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2014-09-01", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE97", "nome": "F.", "cognome": "D'Ercole", "categoria": "Benemerito", "stato": "Attivo", "dataIscrizione": "2016-08-01", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 48, "credito": 0}, {"codice": "STRALE99", "nome": "L.", "cognome": "Valentino", "categoria": "Onorario", "stato": "Attivo", "dataIscrizione": "2018-05-22", "saldatoFino": "giugno 2024", "debitoQuote": 120, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE100", "nome": "G.", "cognome": "Valletta", "categoria": "Onorario", "stato": "Attivo", "dataIscrizione": "2018-07-05", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE102", "nome": "V.", "cognome": "Taddeo", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2020-09-21", "saldatoFino": "aprile 2024", "debitoQuote": 130, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE103", "nome": "V.", "cognome": "Bruno", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2020-09-21", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE105", "nome": "D.", "cognome": "Rizzi", "categoria": "Ordinario", "stato": "Uscito", "dataIscrizione": "2020-09-22", "saldatoFino": "maggio 2026", "debitoQuote": 0, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE106", "nome": "F.", "cognome": "Siani", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2020-09-23", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE107", "nome": "A.", "cognome": "Trentadue", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2021-12-13", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE108", "nome": "D.", "cognome": "Delfine", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2023-03-01", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE109", "nome": "V.", "cognome": "Abrusci", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2024-03-11", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE110", "nome": "I.", "cognome": "Caposiena", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2024-09-30", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE111", "nome": "C.", "cognome": "Pesare", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2025-05-06", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE112", "nome": "M.", "cognome": "Montinaro", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2025-10-08", "saldatoFino": "dicembre 2025", "debitoQuote": 30, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE113", "nome": "G.", "cognome": "Filippo", "categoria": "Ordinario", "stato": "Attivo", "dataIscrizione": "2026-01-29", "saldatoFino": "gennaio 2026", "debitoQuote": 25, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE351", "nome": "Tiger Price", "cognome": "", "  categoria": "Tiger", "stato": "Sospeso", "dataIscrizione": "2026-04-01", "saldatoFino": "aprile 2026", "debitoQuote": 0, "debitoGadget": 0, "credito": 0}, {"codice": "STRALE999", "nome": "NON SOCIO", "cognome": "", "categoria": "Esterni", "stato": "Sospeso", "dataIscrizione": "2026-04-01", "saldatoFino": "aprile 2026", "debitoQuote": 0, "debitoGadget": 0, "credito": 0}];
+const GADGET=[{"codice": "G001", "nome": "Adesivi", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 1, "prezzoEsterni": 1, "prezzoTiger": 1, "costo": 0, "fornitore": "WeMaker"}, {"codice": "G100", "nome": "Asciugamani NTM 26", "categoria": "Gadget", "disponib": "19", "vendute": 0, "prezzoSoci": 20, "prezzoEsterni": 25, "prezzoTiger": 30, "costo": 18, "fornitore": "WeMaker"}, {"codice": "G002", "nome": "Borracchia thermos XII", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 13, "prezzoEsterni": 18, "prezzoTiger": 25, "costo": 12, "fornitore": "WeMaker"}, {"codice": "G003", "nome": "Braccialetti in gomma \"NTM 25\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 1, "prezzoEsterni": 2, "prezzoTiger": 3, "costo": 0.25, "fornitore": "Temu"}, {"codice": "G082", "nome": "Braccialetti in gomma \"NTM 26\"", "categoria": "Gadget", "disponib": "87", "vendute": 14, "prezzoSoci": 1, "prezzoEsterni": 2, "prezzoTiger": 3, "costo": 0.32, "fornitore": "Temu"}, {"codice": "G004", "nome": "Braccialetti in gomma \"XII\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 1, "prezzoEsterni": 2, "prezzoTiger": 3, "costo": 0.25, "fornitore": "Temu"}, {"codice": "G103", "nome": "Cappello 351 NTM 26 ARAXOS", "categoria": "Gadget", "disponib": "4", "vendute": 0, "prezzoSoci": 13, "prezzoEsterni": 18, "prezzoTiger": 20, "costo": 12, "fornitore": "WeMaker"}, {"codice": "G005", "nome": "Cappello NTM 23", "categoria": "Gadget", "disponib": "15", "vendute": 0, "prezzoSoci": 13, "prezzoEsterni": 18, "prezzoTiger": 20, "costo": 12, "fornitore": ""}, {"codice": "G104", "nome": "Cappello XII Stampato", "categoria": "Gadget", "disponib": "20", "vendute": 0, "prezzoSoci": 13, "prezzoEsterni": 18, "prezzoTiger": 20, "costo": 12, "fornitore": "WeMaker"}, {"codice": "G006", "nome": "Cinturino orologio XII", "categoria": "Gadget", "disponib": "1", "vendute": 0, "prezzoSoci": 10, "prezzoEsterni": 12, "prezzoTiger": 20, "costo": 0, "fornitore": ""}, {"codice": "G007", "nome": "Coin NTM 23", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 3, "prezzoTiger": 3, "costo": 0, "fornitore": ""}, {"codice": "G008", "nome": "Cravatte XII con cofanetto", "categoria": "Abbigliamento", "disponib": "14", "vendute": 0, "prezzoSoci": 15, "prezzoEsterni": 20, "prezzoTiger": 25, "costo": 14, "fornitore": ""}, {"codice": "G009", "nome": "Crest argentato", "categoria": "Gadget", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 45, "prezzoEsterni": 60, "prezzoTiger": 100, "costo": 0, "fornitore": ""}, {"codice": "G010", "nome": "Crest smaltato", "categoria": "Gadget", "disponib": "13", "vendute": 0, "prezzoSoci": 15, "prezzoEsterni": 25, "prezzoTiger": 50, "costo": 15, "fornitore": ""}, {"codice": "G011", "nome": "Felpa BIANCA XII", "categoria": "Abbigliamento", "disponib": "18 (XL:4 L:10 M:4 S:0)", "vendute": 0, "prezzoSoci": 40, "prezzoEsterni": 50, "prezzoTiger": 55, "costo": 35, "fornitore": "Kebi"}, {"codice": "G015", "nome": "Felpa con ZIP e CAPPUCCIO", "categoria": "Abbigliamento", "disponib": "3 (L:3)", "vendute": 0, "prezzoSoci": 45, "prezzoEsterni": 55, "prezzoTiger": 60, "costo": 40, "fornitore": "Kebi"}, {"codice": "G019", "nome": "Felpa NERA XII", "categoria": "Abbigliamento", "disponib": "6 (L:4 M:2)", "vendute": 0, "prezzoSoci": 40, "prezzoEsterni": 50, "prezzoTiger": 55, "costo": 35, "fornitore": "Kebi"}, {"codice": "G023", "nome": "Fermacravatta + gemelli con box", "categoria": "Gadget", "disponib": "1", "vendute": 0, "prezzoSoci": 10, "prezzoEsterni": 12, "prezzoTiger": 15, "costo": 0, "fornitore": ""}, {"codice": "G024", "nome": "Foulard / Sciarpa \"TIGER\"", "categoria": "Abbigliamento", "disponib": "59", "vendute": 2, "prezzoSoci": 10, "prezzoEsterni": 20, "prezzoTiger": 25, "costo": 8, "fornitore": "WeMaker"}, {"codice": "G025", "nome": "Foulard / Sciarpa \"XII\"", "categoria": "Abbigliamento", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 10, "prezzoEsterni": 20, "prezzoTiger": 25, "costo": 0, "fornitore": ""}, {"codice": "G026", "nome": "Foulard quadrato \"Tiger\"", "categoria": "Abbigliamento", "disponib": "12", "vendute": 0, "prezzoSoci": 4, "prezzoEsterni": 15, "prezzoTiger": 15, "costo": 2.03, "fornitore": "Temu"}, {"codice": "G027", "nome": "Foulard XII quadrato", "categoria": "Abbigliamento", "disponib": "2", "vendute": 0, "prezzoSoci": 10, "prezzoEsterni": 20, "prezzoTiger": 25, "costo": 10, "fornitore": "Roxy"}, {"codice": "G028", "nome": "Lanyard \"351\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 1, "prezzoEsterni": 2, "prezzoTiger": 2, "costo": 0.83, "fornitore": "Temu"}, {"codice": "G029", "nome": "Lanyard \"XII\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 1, "prezzoEsterni": 2, "prezzoTiger": 2, "costo": 0.83, "fornitore": "Temu"}, {"codice": "G030", "nome": "Litografia \"Disegnata da DI PACE\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 5, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 2.5, "fornitore": "Di Pace"}, {"codice": "G105", "nome": "Litografia \"NTM 26\"", "categoria": "Gadget", "disponib": "20", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 10, "costo": 2.5, "fornitore": "WeMaker"}, {"codice": "G031", "nome": "Litografia \"Rachelina\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 10, "costo": 2.5, "fornitore": ""}, {"codice": "G032", "nome": "Litografia \"Spears of Victory\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 10, "costo": 2.5, "fornitore": ""}, {"codice": "G033", "nome": "Litografia \"XII\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 10, "costo": 2.5, "fornitore": ""}, {"codice": "G034", "nome": "Litografia 3D \"Special color\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 80, "prezzoEsterni": 100, "prezzoTiger": 120, "costo": 80, "fornitore": "WeMaker"}, {"codice": "G109", "nome": "Litografia in metallo NTM 26", "categoria": "Gadget", "disponib": "7", "vendute": 0, "prezzoSoci": 0, "prezzoEsterni": 0, "prezzoTiger": 0, "costo": 0, "fornitore": "WeMaker"}, {"codice": "G035", "nome": "Lupetto XII", "categoria": "Abbigliamento", "disponib": "3 (TG4:1 TG6:1 TG7:1)", "vendute": 0, "prezzoSoci": 13, "prezzoEsterni": 20, "prezzoTiger": 20, "costo": 13, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G108", "nome": "Maglia Bimba NTM 26", "categoria": "Abbigliamento", "disponib": "3", "vendute": 0, "prezzoSoci": 0, "prezzoEsterni": 0, "prezzoTiger": 0, "costo": 0, "fornitore": "WeMaker"}, {"codice": "G102", "nome": "Maglia NTM 26 ARAXOS", "categoria": "Abbigliamento", "disponib": "Esaurito", "vendute": 1, "prezzoSoci": 13, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 12, "fornitore": "WeMaker"}, {"codice": "G038", "nome": "Maglia XII NERA", "categoria": "Abbigliamento", "disponib": "55 (L:26 M:26 S:3)", "vendute": 0, "prezzoSoci": 13, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 12, "fornitore": "Matteo Corvaglia"}, {"codice": "G043", "nome": "Maglia XII VERDE", "categoria": "Abbigliamento", "disponib": "18 (XL:0 L:9 M:9)", "vendute": 1, "prezzoSoci": 13, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 12, "fornitore": "Matteo Corvaglia"}, {"codice": "G087", "nome": "Magnete BAP Lituania BK 66", "categoria": "Gadget", "disponib": "34", "vendute": 0, "prezzoSoci": 8, "prezzoEsterni": 10, "prezzoTiger": 10, "costo": 0, "fornitore": ""}, {"codice": "G046", "nome": "Occhiali XII", "categoria": "Gadget", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 40, "prezzoEsterni": 50, "prezzoTiger": 50, "costo": 37, "fornitore": "Ottica Castellaneta"}, {"codice": "G097", "nome": "Patch \"BAD DECISION MAKE..\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 6, "prezzoTiger": 10, "costo": 1.33, "fornitore": "Temu"}, {"codice": "G99", "nome": "Patch \"CAMPAGNA TIRI 2026 - DECIMOMANNU\"", "categoria": "Patch", "disponib": "51", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4.5, "fornitore": "WeMaker"}, {"codice": "G096", "nome": "Patch \"DON'T FOLLOW ME...\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 6, "prezzoTiger": 10, "costo": 0.72, "fornitore": "Temu"}, {"codice": "G088", "nome": "Patch \"EVERYTHING IS FINE\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 2.25, "fornitore": "Temu"}, {"codice": "G091", "nome": "Patch \"I HAVE NO IDEA WHAT I'M DOING\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 6, "prezzoTiger": 10, "costo": 1.21, "fornitore": "Temu"}, {"codice": "G090", "nome": "Patch \"I NEED A BEER\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 6, "prezzoTiger": 10, "costo": 2.69, "fornitore": "Temu"}, {"codice": "G086", "nome": "Patch \"Long story short\"", "categoria": "Patch", "disponib": "36", "vendute": 1, "prezzoSoci": 5, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4, "fornitore": "WeMaker"}, {"codice": "G098", "nome": "Patch \"PEACE WAS NEVER...\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 4, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 2.82, "fornitore": "Temu"}, {"codice": "G047", "nome": "Patch \"Scudetto EFA\"", "categoria": "Patch", "disponib": "48", "vendute": 0, "prezzoSoci": 5, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 3.5, "fornitore": "Toni Di Franco"}, {"codice": "G110", "nome": "Patch \"SCUDETTO EFA\" Desertico", "categoria": "Patch", "disponib": "100", "vendute": 0, "prezzoSoci": 5, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 3.2, "fornitore": "Giovanni Colla"}, {"codice": "095", "nome": "Patch \"SHIT SHOW\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 6, "prezzoTiger": 10, "costo": 2.46, "fornitore": "Temu"}, {"codice": "G089", "nome": "Patch \"THIS IS FINE\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 2.25, "fornitore": "Temu"}, {"codice": "G048", "nome": "Patch Ecopelle \"1+ FH\"", "categoria": "Patch", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4, "fornitore": "WeMaker"}, {"codice": "G083", "nome": "Patch ITALIA rettangolare", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 2, "prezzoEsterni": 5, "prezzoTiger": 5, "costo": 0.75, "fornitore": "Temu"}, {"codice": "G049", "nome": "Patch PVC \"351\"", "categoria": "Patch", "disponib": "16", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 0, "fornitore": "Toni Di Franco"}, {"codice": "G084", "nome": "Patch PVC \"IN MAR WE TRUST\"", "categoria": "Patch", "disponib": "Da censire", "vendute": 2, "prezzoSoci": 3, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 1.5, "fornitore": "Patch Hub"}, {"codice": "G050", "nome": "Patch PVC \"NTM 25\"", "categoria": "Patch", "disponib": "34", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4.1, "fornitore": "Giovanni Colla"}, {"codice": "G085", "nome": "Patch PVC \"NTM26\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 2, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4, "fornitore": "WeMaker"}, {"codice": "G051", "nome": "Patch PVC \"SCERIFFO\"", "categoria": "Patch", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 4, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 2.36, "fornitore": "Patch Hub"}, {"codice": "G052", "nome": "Patch PVC \"XII\"", "categoria": "Patch", "disponib": "73", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4.6, "fornitore": "Toni Di Franco"}, {"codice": "G053", "nome": "Patch Tonda tessuto \"1000 FH\"", "categoria": "Patch", "disponib": "12", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4.5, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G054", "nome": "Patch Tonda tessuto \"2000 FH\"", "categoria": "Patch", "disponib": "8", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4.5, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G055", "nome": "Patch Tonda tessuto \"A LA CHASSE\"", "categoria": "Patch", "disponib": "67", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G056", "nome": "Patch Tonda tessuto \"EF2000\"", "categoria": "Patch", "disponib": "86", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 3, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G057", "nome": "Patch Tonda tessuto \"NTM 23\"", "categoria": "Patch", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G058", "nome": "Patch Tonda tessuto \"XII TYPHOON\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G059", "nome": "Patch Triangolare \"SPECIAL COLOR NTM 25\"", "categoria": "Patch", "disponib": "53", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4, "fornitore": "WeMaker"}, {"codice": "G101", "nome": "Patch triangolare NTM 26", "categoria": "Patch", "disponib": "134", "vendute": 3, "prezzoSoci": 5, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 3.6, "fornitore": "WeMaker"}, {"codice": "G060", "nome": "Patch Triangolare XII NERA", "categoria": "Patch", "disponib": "11", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4.5, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G061", "nome": "Patch Triangolare XII VERDE", "categoria": "Patch", "disponib": "38", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 4.5, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G062", "nome": "Patch XII \"LA CACCIA\"", "categoria": "Patch", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 6, "prezzoEsterni": 8, "prezzoTiger": 10, "costo": 5, "fornitore": "Giovanni Colla"}, {"codice": "G063", "nome": "Peluche EFA", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 10, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 7, "fornitore": "Fun Experts"}, {"codice": "G064", "nome": "Penna Parker", "categoria": "Gadget", "disponib": "13", "vendute": 0, "prezzoSoci": 10, "prezzoEsterni": 15, "prezzoTiger": 18, "costo": 9, "fornitore": "Roxy"}, {"codice": "G065", "nome": "Penne XII", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 1, "prezzoEsterni": 2, "prezzoTiger": 2, "costo": 0.48, "fornitore": "Temu"}, {"codice": "G093", "nome": "Pochette \"o shit kit\" bianca", "categoria": "Gadget", "disponib": "2", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 10, "costo": 2.28, "fornitore": "Temu"}, {"codice": "G092", "nome": "Pochette \"o shit kit\" rossa", "categoria": "Gadget", "disponib": "2", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 10, "costo": 1.78, "fornitore": "Temu"}, {"codice": "G107", "nome": "Pochette NTM 25", "categoria": "Gadget", "disponib": "5", "vendute": 0, "prezzoSoci": 10, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 9, "fornitore": "WeMaker"}, {"codice": "G066", "nome": "Pochette XII", "categoria": "Gadget", "disponib": "15", "vendute": 2, "prezzoSoci": 10, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 9, "fornitore": "WeMaker"}, {"codice": "G094", "nome": "Portachiavi \"BAD DECISION MAKE...\"", "categoria": "Gadget", "disponib": "9", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 8, "costo": 1.43, "fornitore": "Temu"}, {"codice": "G067", "nome": "Portachiavi apribottiglie", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 1, "prezzoEsterni": 2, "prezzoTiger": 2, "costo": 0.16, "fornitore": "Temu"}, {"codice": "G068", "nome": "Portachiavi in ecopelle NTM 2026", "categoria": "Gadget", "disponib": "36", "vendute": 0, "prezzoSoci": 5, "prezzoEsterni": 7, "prezzoTiger": 8, "costo": 4, "fornitore": "WeMaker"}, {"codice": "G069", "nome": "Portachiavi in legno", "categoria": "Gadget", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 4, "prezzoEsterni": 6, "prezzoTiger": 6, "costo": 3, "fornitore": ""}, {"codice": "G070", "nome": "Portachiavi in tessuto XII", "categoria": "Gadget", "disponib": "16", "vendute": 0, "prezzoSoci": 4, "prezzoEsterni": 6, "prezzoTiger": 8, "costo": 3.5, "fornitore": "Giuseppe Pennacchia"}, {"codice": "G071", "nome": "Portachiavi PVC EFA sagomato", "categoria": "Gadget", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 8, "costo": 2.7, "fornitore": "Patch Hub"}, {"codice": "G106", "nome": "Schnupftabak", "categoria": "Gadget", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 2, "prezzoEsterni": 3, "prezzoTiger": 5, "costo": 2, "fornitore": "Temu"}, {"codice": "G072", "nome": "Spilletta \"351\"", "categoria": "Gadget", "disponib": "Da censire", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 5, "costo": 3, "fornitore": ""}, {"codice": "G073", "nome": "Spilletta \"351\" con box", "categoria": "Gadget", "disponib": "3", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 5, "costo": 3, "fornitore": ""}, {"codice": "G074", "nome": "Spilletta \"XII\"", "categoria": "Gadget", "disponib": "Esaurito", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 7, "costo": 0, "fornitore": ""}, {"codice": "G075", "nome": "Spilletta XII XII 24", "categoria": "Gadget", "disponib": "30", "vendute": 0, "prezzoSoci": 3, "prezzoEsterni": 5, "prezzoTiger": 7, "costo": 1.3, "fornitore": "Spilleeconomiche.it"}, {"codice": "G076", "nome": "Tail special color NTM 25", "categoria": "Gadget", "disponib": "7", "vendute": 0, "prezzoSoci": 11, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 10, "fornitore": "WeMaker"}, {"codice": "G077", "nome": "VINO \"Macchia di gatto\"", "categoria": "Vino", "disponib": "26", "vendute": 0, "prezzoSoci": 15, "prezzoEsterni": 15, "prezzoTiger": 20, "costo": 14, "fornitore": "Polvanera"}, {"codice": "G078", "nome": "VINO \"Verdeca\"", "categoria": "Vino", "disponib": "27", "vendute": 0, "prezzoSoci": 9, "prezzoEsterni": 12, "prezzoTiger": 20, "costo": 8.5, "fornitore": "Polvanera"}, {"codice": "G079", "nome": "VINO 14°", "categoria": "Vino", "disponib": "10", "vendute": 7, "prezzoSoci": 9, "prezzoEsterni": 12, "prezzoTiger": 20, "costo": 8, "fornitore": "Polvanera"}, {"codice": "G080", "nome": "VINO 14° (senza etichetta)", "categoria": "Vino", "disponib": "5", "vendute": 0, "prezzoSoci": 8, "prezzoEsterni": 11, "prezzoTiger": 17, "costo": 7, "fornitore": "Polvanera"}, {"codice": "G081", "nome": "VINO 17°", "categoria": "Vino", "disponib": "27", "vendute": 1, "prezzoSoci": 16, "prezzoEsterni": 20, "prezzoTiger": 30, "costo": 15, "fornitore": "Polvanera"}];
+const MOV=[{"num": "110", "data": "2026-06-04", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 20, "verificato": true, "motivazione": "Pagamento Vendita gadget — Patch PVC \"IN MAR WE TRUST\", Patch \"Long story short\""}, {"num": "109", "data": "2026-06-03", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 60, "verificato": true, "motivazione": "Pagamento Vendita gadget — Patch PVC \"NTM26\""}, {"num": "105", "data": "2026-05-29", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 52, "verificato": true, "motivazione": "Vendita gadget: VINO 14° — Margine: +4.00€"}, {"num": "104", "data": "2026-05-29", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 20, "verificato": true, "motivazione": "Vendita gadget: Pochette — Margine: +2.00€"}, {"num": "106", "data": "2026-05-29", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 115, "verificato": true, "motivazione": "Pagamento Vendita gadget — Patch triangolare NTM 26, Portachiavi in ecopelle NTM 2026, Pochette, Litografia \"NTM 26\""}, {"num": "107", "data": "2026-05-29", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 250, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "108", "data": "2026-05-29", "tipo": "Uscita", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 383.8, "verificato": true, "motivazione": "Saldo Antonio Di Franco — Acquisto 73 patch XII (4,60€) + 16 patch coccarda con stoffa in argento (3€)"}, {"num": "102", "data": "2026-05-28", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 21, "verificato": true, "motivazione": "Acquisto bombola gas per tiger meet"}, {"num": "101", "data": "2026-05-28", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 75, "verificato": true, "motivazione": "Spettanza uscita socio DOMENICO RIZZI"}, {"num": "100", "data": "2026-05-28", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 175, "verificato": true, "motivazione": "Pagamento Quota mensile"}, {"num": "99", "data": "2026-05-27", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 20, "verificato": true, "motivazione": "Acquisto targhetta e cornice per pensionamento Rizzi"}, {"num": "98", "data": "2026-05-22", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 15, "verificato": true, "motivazione": "Vendita gadget: Patch triangolare NTM 26 — Margine: +4.20€"}, {"num": "97", "data": "2026-05-22", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 20, "verificato": true, "motivazione": "Vendita gadget: Foulard / Sciarpa \"TIGER\" — Margine: +4.00€"}, {"num": "96", "data": "2026-05-22", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 13, "verificato": true, "motivazione": "Vendita gadget: Maglie XII VERDI (M) — Margine: +1.00€"}, {"num": "95", "data": "2026-05-22", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 13, "verificato": true, "motivazione": "Vendita gadget: Maglie XII VERDI (XL) — Margine: +1.00€"}, {"num": "89", "data": "2026-05-21", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 15, "verificato": true, "motivazione": "Pagamento Vendita gadget — Peluche EFA"}, {"num": "88", "data": "2026-05-14", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 4, "verificato": true, "motivazione": "Vendita gadget - Braccialetti in gomma \"NTM 26\" - 2026-05-14"}, {"num": "87", "data": "2026-05-14", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 8, "verificato": true, "motivazione": "Vendita gadget - Patch PVC \"NTM26\" - 2026-05-05"}, {"num": "86", "data": "2026-05-14", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 8, "verificato": true, "motivazione": "Vendita gadget - Patch PVC \"NTM26\" - 2026-05-06"}, {"num": "85", "data": "2026-05-14", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 8, "verificato": true, "motivazione": "Vendita gadget - Patch PVC \"IN MAR WE TRUST\" - 2026-05-06"}, {"num": "84", "data": "2026-05-14", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 12, "verificato": true, "motivazione": "Vendita gadget - Maglia NTM 26 ARAXOS - 2026-05-06"}, {"num": "83", "data": "2026-05-14", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 10, "verificato": true, "motivazione": "Vendita gadget - Braccialetti in gomma \"NTM 26\" - 2026-05-14"}, {"num": "82", "data": "2026-05-13", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 200, "verificato": true, "motivazione": "Rimborso a STRALE14 A. Mignogna - Acquisto snuff tabac per NTM 26"}, {"num": "81", "data": "2026-05-13", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 90, "verificato": true, "motivazione": "Rimborso a STRALE20 L. Perfetti - Acquisto 10 patch 1000FH + 10 patch 2000FH"}, {"num": "80", "data": "2026-05-11", "tipo": "Rettifica negativa", "metodo": "Altro", "conto": "Cassaforte", "importo": 27.5, "verificato": true, "motivazione": "Rettifica negativa: verifica cassa ops da Di Pace"}, {"num": "76", "data": "2026-05-08", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 51, "verificato": true, "motivazione": "Acquisto caffè da Di Pace"}, {"num": "75", "data": "2026-05-06", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 12, "verificato": true, "motivazione": "Vendita gadget - Maglia NTM 26 ARAXOS - 2026-05-06"}, {"num": "74", "data": "2026-05-06", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 9, "verificato": true, "motivazione": "Acquisto colori per loghi gruppo volo"}, {"num": "73", "data": "2026-05-06", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 200, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "72", "data": "2026-05-04", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 30, "verificato": true, "motivazione": "Vendita gadget - Vendita gadget personale in visita"}, {"num": "71", "data": "2026-05-04", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 10, "verificato": true, "motivazione": "Vendita gadget - X lgt putignani"}, {"num": "70", "data": "2026-05-01", "tipo": "Rettifica positiva", "metodo": "Altro", "conto": "Conto Bancario", "importo": 863, "verificato": true, "motivazione": "Rettifica positiva: correzione registro vecchi movimenti"}, {"num": "66", "data": "2026-04-30", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 40, "verificato": true, "motivazione": "Altro - Acquisto 1 Macchia di Gatto, 1 Verdeca, 1 14°"}, {"num": "67", "data": "2026-04-30", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 100, "verificato": true, "motivazione": "Entrata contanti dal Kuwait"}, {"num": "65", "data": "2026-04-29", "tipo": "Rettifica negativa", "metodo": "Altro", "conto": "Conto Bancario", "importo": 573.5, "verificato": true, "motivazione": "Rettifica negativa: Correzione da Angel"}, {"num": "64", "data": "2026-04-29", "tipo": "Rettifica positiva", "metodo": "Altro", "conto": "Cassaforte", "importo": 397.5, "verificato": true, "motivazione": "Rettifica positiva: Correzione da Angel"}, {"num": "61", "data": "2026-04-29", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 35, "verificato": true, "motivazione": "Acquisto MyPos"}, {"num": "38", "data": "2026-04-29", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 17, "verificato": true, "motivazione": "Vendita gadget - X Vito sansonetti"}, {"num": "37", "data": "2026-04-29", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 7.5, "verificato": true, "motivazione": "Rimborso a STRALE9 A. Angelelli - Acquisto 3 pozzetti monolitici (Vittorio Bruno)"}, {"num": "36", "data": "2026-04-29", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 75, "verificato": true, "motivazione": "Altro - Saldo Gadget e Vino"}, {"num": "60", "data": "2026-04-29", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 23, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "62", "data": "2026-04-29", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 15, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "63", "data": "2026-04-29", "tipo": "Entrata", "metodo": "POS", "conto": "Conto Bancario", "importo": 75, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "34", "data": "2026-04-28", "tipo": "Rettifica negativa", "metodo": "Altro", "conto": "Cassaforte", "importo": 35, "verificato": true, "motivazione": "Rettifica negativa: Correzione fine test"}, {"num": "33", "data": "2026-04-28", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 185, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "32", "data": "2026-04-28", "tipo": "Rettifica positiva", "metodo": "Altro", "conto": "Cassaforte", "importo": 245, "verificato": true, "motivazione": "Rettifica positiva: Correzione fine test"}, {"num": "27", "data": "2026-04-28", "tipo": "Rettifica positiva", "metodo": "Altro", "conto": "Conto Bancario", "importo": 51, "verificato": true, "motivazione": "Rettifica positiva: correzione"}, {"num": "26", "data": "2026-04-28", "tipo": "Rettifica positiva", "metodo": "Altro", "conto": "Cassaforte", "importo": 5459.5, "verificato": true, "motivazione": "Rettifica positiva: correzione"}, {"num": "25", "data": "2026-04-28", "tipo": "Rettifica negativa", "metodo": "Altro", "conto": "Cassaforte", "importo": 5469.5, "verificato": true, "motivazione": "Rettifica negativa: correzione"}, {"num": "24", "data": "2026-04-28", "tipo": "Rettifica negativa", "metodo": "Altro", "conto": "Cassaforte", "importo": 12.5, "verificato": true, "motivazione": "Rettifica negativa: Test fix"}, {"num": "57", "data": "2026-04-27", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 60, "verificato": true, "motivazione": "Acquisto LITOGRAFIE N°24"}, {"num": "58", "data": "2026-04-27", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 60, "verificato": true, "motivazione": "Pagamento Altro"}, {"num": "59", "data": "2026-04-27", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 74, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "56", "data": "2026-04-24", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 150, "verificato": true, "motivazione": "Acquisto taralli per NTM 26"}, {"num": "54", "data": "2026-04-24", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 51, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "53", "data": "2026-04-23", "tipo": "Uscita", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 290, "verificato": true, "motivazione": "Acquisto 200 patch \"IN MAR WE TRUST\""}, {"num": "52", "data": "2026-04-23", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 20, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "50", "data": "2026-04-22", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 270, "verificato": true, "motivazione": "Acquisto Patch TEMU"}, {"num": "51", "data": "2026-04-22", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 285, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "49", "data": "2026-04-20", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 360, "verificato": true, "motivazione": "Spesa international night NTM 26"}, {"num": "48", "data": "2026-04-20", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 225, "verificato": true, "motivazione": "Acquisto 50 patch triangolari XII verdi"}, {"num": "47", "data": "2026-04-20", "tipo": "Uscita", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 204, "verificato": true, "motivazione": "Spesa attivazione conto corrente"}, {"num": "39", "data": "2026-04-17", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 48, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "40", "data": "2026-04-17", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 194, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "41", "data": "2026-04-17", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 122, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "55", "data": "2026-04-17", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 97.5, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "45", "data": "2026-04-15", "tipo": "Entrata", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 270, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "46", "data": "2026-04-15", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 200, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "43", "data": "2026-04-09", "tipo": "Entrata", "metodo": "Contanti", "conto": "Cassaforte", "importo": 54, "verificato": true, "motivazione": "Pagamento Vendita gadget"}, {"num": "79", "data": "2026-04-01", "tipo": "Uscita", "metodo": "Contanti", "conto": "Cassaforte", "importo": 1650, "verificato": true, "motivazione": "Acquisto ApeCar"}, {"num": "68", "data": "2026-03-12", "tipo": "Uscita", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 300, "verificato": true, "motivazione": "Acquisto Patch Giovanni Colla - NTM 26"}, {"num": "69", "data": "2026-02-24", "tipo": "Uscita", "metodo": "Bonifico", "conto": "Conto Bancario", "importo": 563, "verificato": true, "motivazione": "Acquisto Patch Tony Di Franco"}];
+const DEBGAD=[{"codice": "STRALE14", "nominativo": "A. Mignogna", "voci": [{"gadget": "Asciugamani NTM 26", "qta": 1, "dovuto": 20, "pagato": 0, "residuo": 20}, {"gadget": "Cappello 351 NTM 26 ARAXOS", "qta": 1, "dovuto": 13, "pagato": 0, "residuo": 13}, {"gadget": "Patch \"Long story short\"", "qta": 1, "dovuto": 5, "pagato": 0, "residuo": 5}, {"gadget": "Patch PVC \"IN MAR WE TRUST\"", "qta": 1, "dovuto": 3, "pagato": 0, "residuo": 3}, {"gadget": "Patch PVC \"NTM26\"", "qta": 2, "dovuto": 12, "pagato": 0, "residuo": 12}, {"gadget": "Patch triangolare NTM 26", "qta": 3, "dovuto": 15, "pagato": 0, "residuo": 15}], "subtotale": 68}, {"codice": "STRALE26", "nominativo": "L. Scavo", "voci": [{"gadget": "VINO 14°", "qta": 1, "dovuto": 9, "pagato": 0, "residuo": 9}], "subtotale": 9}, {"codice": "STRALE46", "nominativo": "O. Odesco", "voci": [{"gadget": "Asciugamani NTM 26", "qta": 1, "dovuto": 20, "pagato": 0, "residuo": 20}, {"gadget": "Patch triangolare NTM 26", "qta": 1, "dovuto": 5, "pagato": 0, "residuo": 5}], "subtotale": 25}, {"codice": "STRALE5", "nominativo": "A. Rossetti", "voci": [{"gadget": "Foulard / Sciarpa \"TIGER\"", "qta": 1, "dovuto": 10, "pagato": 0, "residuo": 10}], "subtotale": 10}, {"codice": "STRALE69", "nominativo": "M. Dipace", "voci": [{"gadget": "Patch PVC \"NTM26\"", "qta": 10, "dovuto": 60, "pagato": 0, "residuo": 60}, {"gadget": "Patch triangolare NTM 26", "qta": 25, "dovuto": 125, "pagato": 0, "residuo": 125}], "subtotale": 185}, {"codice": "STRALE9", "nominativo": "A. Angelelli", "voci": [{"gadget": "Asciugamani NTM 26", "qta": 1, "dovuto": 20, "pagato": 0, "residuo": 20}, {"gadget": "Foulard / Sciarpa \"TIGER\"", "qta": 1, "dovuto": 10, "pagato": 0, "residuo": 10}, {"gadget": "Patch triangolare NTM 26", "qta": 1, "dovuto": 5, "pagato": 0, "residuo": 5}], "subtotale": 35}, {"codice": "STRALE97", "nominativo": "F. D'Ercole", "voci": [{"gadget": "VINO 14°", "qta": 6, "dovuto": 48, "pagato": 0, "residuo": 48}], "subtotale": 48}];
+const SALDI_INI={"Cassaforte": 5507.0, "Conto Bancario": 5867.92, "nota": "Saldi storici precedenti al registro (movimenti pre-sistema)"};
+
+const f2=(n)=>(+n||0).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)};
+
+function getSaldi(){
+  const c={Cassaforte:SALDI_INI.Cassaforte,'Conto Bancario':SALDI_INI['Conto Bancario']};
+  MOV.forEach(m=>{const v=+m.importo,t=m.tipo,k=m.conto;if(!(k in c))c[k]=0;if(t==='Entrata'||t==='Rettifica positiva')c[k]+=v;else c[k]-=v;});
+  return c;
+}
+function go(s){
+  document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(x=>x.classList.remove('active'));
+  document.getElementById('section-'+s).classList.add('active');
+  document.getElementById('nav-'+s).classList.add('active');
+  ({dash:rDash,soci:rSoci,cassa:rCassa,gadget:rGad,debiti:rDQ,debgadget:rDG})[s]?.();
+}
+function tipoBadge(t){const m={'Entrata':'bg','Rettifica positiva':'bt','Uscita':'br','Rettifica negativa':'ba'};return`<span class="badge ${m[t]||'bgr'}">${t}</span>`;}
+function catBadge(c){const m={'Ordinario':'bb','Onorario':'bp','Benemerito':'bt','Esterni':'ba','Tiger':'bo'};return`<span class="badge ${m[c]||'bgr'}">${c||'—'}</span>`;}
+function statoBadge(s){return`<span class="badge ${s==='Attivo'?'bg':s==='Uscito'?'br':'ba'}">${s}</span>`;}
+function isUsc(t){return t==='Uscita'||t==='Rettifica negativa';}
+
+function rDash(){
+  const sal=getSaldi();const tot=Object.values(sal).reduce((a,b)=>a+b,0);
+  const att=SOCI.filter(s=>s.stato==='Attivo');
+  const tdq=att.reduce((a,s)=>a+(+s.debitoQuote||0),0);
+  const tdg=att.reduce((a,s)=>a+(+s.debitoGadget||0),0);
+  const tEnt=MOV.filter(m=>!isUsc(m.tipo)).reduce((a,m)=>a+(+m.importo),0);
+  const tUsc=MOV.filter(m=>isUsc(m.tipo)).reduce((a,m)=>a+(+m.importo),0);
+  document.getElementById('dk').innerHTML=`
+    <div class="kpi"><div class="klabel">Disponibilità Netta</div><div class="kval">€ ${f2(tot)}</div><div class="ksub">Al 05/06/2026</div></div>
+    <div class="kpi"><div class="klabel">Cassaforte</div><div class="kval">€ ${f2(sal.Cassaforte)}</div><div class="ksub">Contanti</div></div>
+    <div class="kpi"><div class="klabel">Conto Bancario</div><div class="kval">€ ${f2(sal['Conto Bancario'])}</div><div class="ksub">Banca</div></div>
+    <div class="kpi"><div class="klabel">Soci Attivi</div><div class="kval">${att.length}</div><div class="ksub">su ${SOCI.length} totali</div></div>
+    <div class="kpi"><div class="klabel">Debiti Quote</div><div class="kval neg">€ ${f2(tdq)}</div><div class="ksub">Da incassare</div></div>
+    <div class="kpi"><div class="klabel">Debiti Gadget</div><div class="kval neg">€ ${f2(tdg)}</div><div class="ksub">7 soci</div></div>
+    <div class="kpi"><div class="klabel">Entrate Registro</div><div class="kval">€ ${f2(tEnt)}</div><div class="ksub">Dal 24/02/2026</div></div>
+    <div class="kpi"><div class="klabel">Uscite Registro</div><div class="kval warn">€ ${f2(tUsc)}</div><div class="ksub">Dal 24/02/2026</div></div>`;
+  document.getElementById('d-cassa').innerHTML=`
+    <div class="ci"><div class="clabel"><i class="ti ti-safe" style="color:var(--gm)"></i> Cassaforte</div><div class="camt">€ ${f2(sal.Cassaforte)}</div></div>
+    <div class="ci"><div class="clabel"><i class="ti ti-building-bank" style="color:var(--gm)"></i> Conto Bancario</div><div class="camt">€ ${f2(sal['Conto Bancario'])}</div></div>
+    <div class="ci ci-tot"><div class="clabel"><i class="ti ti-sum"></i> Disponibilità Netta</div><div class="camt">€ ${f2(tot)}</div></div>`;
+  const ult=[...MOV].reverse().slice(0,10);
+  document.getElementById('d-mov').innerHTML=`<table><tbody>${ult.map(m=>`<tr>
+    <td style="font-size:11px;color:var(--txt3);white-space:nowrap">${m.data}</td>
+    <td>${tipoBadge(m.tipo)}</td>
+    <td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.motivazione}</td>
+    <td style="font-weight:700;font-size:12px;white-space:nowrap;color:${isUsc(m.tipo)?'var(--red)':'var(--g)'}">
+      ${isUsc(m.tipo)?'−':'+'}€${f2(m.importo)}</td></tr>`).join('')}</tbody></table>`;
+  const topQ=[...att].filter(s=>s.debitoQuote>0).sort((a,b)=>b.debitoQuote-a.debitoQuote).slice(0,8);
+  document.getElementById('d-qd').innerHTML=`<table><tbody>${topQ.map(s=>`<tr>
+    <td style="font-weight:700;font-size:11px;color:var(--gd)">${s.codice}</td>
+    <td style="font-size:12px">${s.cognome} ${s.nome}</td>
+    <td style="font-weight:700;color:var(--red);white-space:nowrap">€ ${f2(s.debitoQuote)}</td></tr>`).join('')}</tbody></table>`;
+  document.getElementById('d-gd').innerHTML=`<table><tbody>${[...DEBGAD].sort((a,b)=>b.subtotale-a.subtotale).map(d=>`<tr>
+    <td style="font-weight:700;font-size:11px;color:var(--gd)">${d.codice}</td>
+    <td style="font-size:12px">${d.nominativo}</td>
+    <td style="font-weight:700;color:var(--red);white-space:nowrap">€ ${f2(d.subtotale)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function rSoci(){
+  const q=(document.getElementById('s-q').value||'').toLowerCase();
+  const fS=document.getElementById('s-st').value;const fC=document.getElementById('s-ca').value;
+  const list=SOCI.filter(s=>{if(fS&&s.stato!==fS)return false;if(fC&&s.categoria!==fC)return false;if(q&&!(s.codice+s.cognome+s.nome).toLowerCase().includes(q))return false;return true;}).sort((a,b)=>a.cognome.localeCompare(b.cognome));
+  document.getElementById('s-cnt').textContent=`${list.length} risultati`;
+  document.getElementById('s-tb').innerHTML=list.length?list.map(s=>`<tr>
+    <td style="font-weight:700;color:var(--gd);font-size:12px">${s.codice}</td>
+    <td style="font-weight:500">${s.cognome}</td><td>${s.nome}</td>
+    <td>${catBadge(s.categoria)}</td><td>${statoBadge(s.stato)}</td>
+    <td style="font-size:11px;color:var(--txt3)">${s.dataIscrizione||'—'}</td>
+    <td style="font-size:12px;color:var(--txt3)">${s.saldatoFino||'—'}</td>
+    <td style="text-align:right;font-weight:700;color:${s.debitoQuote>0?'var(--red)':'var(--g)'}">€ ${f2(s.debitoQuote)}</td>
+    <td style="text-align:right;font-weight:700;color:${s.debitoGadget>0?'var(--red)':'var(--g)'}">€ ${f2(s.debitoGadget)}</td>
+  </tr>`).join(''):`<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--txt3)">Nessun risultato</td></tr>`;
+}
+
+function rCassa(){
+  const sal=getSaldi();
+  const tEnt=MOV.filter(m=>!isUsc(m.tipo)).reduce((a,m)=>a+(+m.importo),0);
+  const tUsc=MOV.filter(m=>isUsc(m.tipo)).reduce((a,m)=>a+(+m.importo),0);
+  document.getElementById('ck').innerHTML=`
+    <div class="kpi"><div class="klabel">Cassaforte</div><div class="kval">€ ${f2(sal.Cassaforte)}</div><div class="ksub">Saldo reale</div></div>
+    <div class="kpi"><div class="klabel">Conto Bancario</div><div class="kval">€ ${f2(sal['Conto Bancario'])}</div><div class="ksub">Saldo reale</div></div>
+    <div class="kpi"><div class="klabel">Disponibilità Netta</div><div class="kval">€ ${f2(sal.Cassaforte+sal['Conto Bancario'])}</div><div class="ksub">Totale</div></div>
+    <div class="kpi"><div class="klabel">Movimenti</div><div class="kval">${MOV.length}</div><div class="ksub">Tutti verificati</div></div>
+    <div class="kpi"><div class="klabel">Entrate Registro</div><div class="kval">€ ${f2(tEnt)}</div><div class="ksub">Dal 24/02/2026</div></div>
+    <div class="kpi"><div class="klabel">Uscite Registro</div><div class="kval warn">€ ${f2(tUsc)}</div><div class="ksub">Dal 24/02/2026</div></div>`;
+  rMov();
+}
+
+function rMov(){
+  const q=(document.getElementById('m-q')?.value||'').toLowerCase();
+  const fT=document.getElementById('m-tp')?.value||'';
+  const fC=document.getElementById('m-co')?.value||'';
+  const fM=document.getElementById('m-me')?.value||'';
+  const list=[...MOV].filter(m=>{if(fT&&m.tipo!==fT)return false;if(fC&&m.conto!==fC)return false;if(fM&&m.metodo!==fM)return false;if(q&&!m.motivazione.toLowerCase().includes(q))return false;return true;});
+  const el=document.getElementById('m-cnt');if(el)el.textContent=`${list.length} movimenti`;
+  const tb=document.getElementById('m-tb');if(!tb)return;
+  tb.innerHTML=list.length?list.map(m=>`<tr>
+    <td style="font-size:11px;font-weight:700;color:var(--txt3)">#${m.num}</td>
+    <td style="font-size:12px;white-space:nowrap">${m.data}</td>
+    <td>${tipoBadge(m.tipo)}</td>
+    <td style="font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.motivazione}">${m.motivazione}</td>
+    <td><span class="badge bgr">${m.metodo||'—'}</span></td>
+    <td style="font-weight:700;white-space:nowrap;color:${isUsc(m.tipo)?'var(--red)':'var(--g)'}">
+      ${isUsc(m.tipo)?'−':'+'}€${f2(m.importo)}</td>
+    <td><span class="badge ${m.conto==='Cassaforte'?'bo':'bb'}">${m.conto}</span></td>
+  </tr>`).join(''):`<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--txt3)">Nessun risultato</td></tr>`;
+}
+
+function rGad(){
+  const q=(document.getElementById('g-q').value||'').toLowerCase();
+  const fC=document.getElementById('g-ca').value;const fD=document.getElementById('g-di').value;
+  const catC={'Gadget':'bb','Abbigliamento':'bp','Patch':'ba','Vino':'bt'};
+  const list=[...GADGET].filter(g=>{if(fC&&g.categoria!==fC)return false;const d=g.disponib||'';if(fD==='disp'&&(d==='Esaurito'||d==='Da censire'))return false;if(fD==='esau'&&d!=='Esaurito')return false;if(fD==='cens'&&d!=='Da censire')return false;if(q&&!(g.codice+g.nome).toLowerCase().includes(q))return false;return true;}).sort((a,b)=>a.nome.localeCompare(b.nome));
+  document.getElementById('gk').innerHTML=`
+    <div class="kpi"><div class="klabel">Totale Articoli</div><div class="kval">${GADGET.length}</div><div class="ksub">Nel catalogo</div></div>
+    <div class="kpi"><div class="klabel">Disponibili</div><div class="kval">${GADGET.filter(g=>g.disponib!=='Esaurito'&&g.disponib!=='Da censire').length}</div><div class="ksub">Con giacenza</div></div>
+    <div class="kpi"><div class="klabel">Esauriti</div><div class="kval warn">${GADGET.filter(g=>g.disponib==='Esaurito').length}</div><div class="ksub">Stock zero</div></div>
+    <div class="kpi"><div class="klabel">Da Censire</div><div class="kval">${GADGET.filter(g=>g.disponib==='Da censire').length}</div><div class="ksub">Quantità ignota</div></div>`;
+  document.getElementById('g-cnt').textContent=`${list.length} articoli`;
+  document.getElementById('g-tb').innerHTML=list.length?list.map(g=>{const dC=g.disponib==='Esaurito'?'br':g.disponib==='Da censire'?'ba':'bg';return`<tr>
+    <td style="font-weight:700;color:var(--gd);font-size:11px">${g.codice}</td>
+    <td style="font-size:13px">${g.nome}</td>
+    <td><span class="badge ${catC[g.categoria]||'bgr'}">${g.categoria||'—'}</span></td>
+    <td><span class="badge ${dC}">${g.disponib||'—'}</span></td>
+    <td style="text-align:right">${g.vendute||0}</td>
+    <td style="text-align:right">€ ${f2(g.prezzoSoci)}</td>
+    <td style="text-align:right">€ ${f2(g.prezzoEsterni)}</td>
+    <td style="text-align:right">€ ${f2(g.prezzoTiger)}</td>
+    <td style="text-align:right">€ ${f2(g.costo)}</td>
+    <td style="font-size:11px;color:var(--txt3)">${g.fornitore||'—'}</td>
+  </tr>`;}).join(''):`<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--txt3)">Nessun risultato</td></tr>`;
+}
+
+function rDQ(){
+  const q=(document.getElementById('dq-q')?.value||'').toLowerCase();
+  const so=document.getElementById('dq-so')?.value||'deb';
+  const fi=document.getElementById('dq-fi')?.value||'';
+  const att=SOCI.filter(s=>s.stato==='Attivo');
+  const tdq=att.reduce((a,s)=>a+(+s.debitoQuote||0),0);
+  const tdg=att.reduce((a,s)=>a+(+s.debitoGadget||0),0);
+  const cd=att.filter(s=>s.debitoQuote>0).length;
+  document.getElementById('dqk').innerHTML=`
+    <div class="kpi"><div class="klabel">Debiti Quote</div><div class="kval neg">€ ${f2(tdq)}</div><div class="ksub">${cd} soci debitori</div></div>
+    <div class="kpi"><div class="klabel">Debiti Gadget</div><div class="kval neg">€ ${f2(tdg)}</div><div class="ksub">7 soci</div></div>
+    <div class="kpi"><div class="klabel">Totale Debiti</div><div class="kval neg">€ ${f2(tdq+tdg)}</div><div class="ksub">Quote + Gadget</div></div>
+    <div class="kpi"><div class="klabel">Soci In Pari</div><div class="kval">${att.filter(s=>s.debitoQuote===0&&s.debitoGadget===0).length}</div><div class="ksub">Nessun debito</div></div>`;
+  let list=[...att];
+  if(fi==='pos') list=list.filter(s=>s.debitoQuote>0);
+  if(fi==='zero') list=list.filter(s=>s.debitoQuote===0);
+  if(q) list=list.filter(s=>(s.codice+s.cognome+s.nome).toLowerCase().includes(q));
+  if(so==='deb') list.sort((a,b)=>b.debitoQuote-a.debitoQuote);else list.sort((a,b)=>a.cognome.localeCompare(b.cognome));
+  document.getElementById('dq-tb').innerHTML=list.map(s=>{const tot=(+s.debitoQuote||0)+(+s.debitoGadget||0);return`<tr>
+    <td style="font-weight:700;color:var(--gd);font-size:11px">${s.codice}</td>
+    <td style="font-weight:500">${s.cognome}</td><td>${s.nome}</td>
+    <td>${catBadge(s.categoria)}</td>
+    <td style="font-size:12px;color:var(--txt3)">${s.saldatoFino||'—'}</td>
+    <td style="text-align:right;font-weight:700;color:${s.debitoQuote>0?'var(--red)':'var(--g)'}">€ ${f2(s.debitoQuote)}</td>
+    <td style="text-align:right;font-weight:700;color:${s.debitoGadget>0?'var(--red)':'var(--g)'}">€ ${f2(s.debitoGadget)}</td>
+    <td style="text-align:right;font-weight:700;color:${tot>0?'var(--red)':'var(--g)'}">€ ${f2(tot)}</td>
+    <td>${tot>150?'<span class="badge br">Elevato</span>':tot>0?'<span class="badge ba">Presente</span>':'<span class="badge bg">In pari</span>'}</td>
+  </tr>`;}).join('');
+}
+
+function rDG(){
+  const tot=DEBGAD.reduce((a,d)=>a+d.subtotale,0);
+  document.getElementById('dgk').innerHTML=`
+    <div class="kpi"><div class="klabel">Totale Residui</div><div class="kval neg">€ ${f2(tot)}</div><div class="ksub">Debiti gadget aperti</div></div>
+    <div class="kpi"><div class="klabel">Soci Debitori</div><div class="kval neg">${DEBGAD.length}</div><div class="ksub">Con debito gadget</div></div>`;
+  document.getElementById('dg-cards').innerHTML=DEBGAD.map((d,i)=>`
+    <div class="deb-card">
+      <div class="deb-head" onclick="toggleDeb(${i})">
+        <div><span style="font-size:11px;color:var(--txt3);font-weight:700">${d.codice}</span><span class="deb-nom" style="margin-left:8px">${d.nominativo}</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><span class="deb-tot">€ ${f2(d.subtotale)}</span><i class="ti ti-chevron-down" id="chev-${i}" style="color:var(--txt3);transition:transform .2s"></i></div>
+      </div>
+      <div class="deb-body" id="deb-body-${i}">
+        <table><thead><tr><th>Gadget</th><th>Qtà</th><th>Dovuto</th><th>Pagato</th><th>Residuo</th></tr></thead>
+        <tbody>${d.voci.map(v=>`<tr>
+          <td>${v.gadget}</td><td style="text-align:right">${v.qta}</td>
+          <td style="text-align:right">€ ${f2(v.dovuto)}</td>
+          <td style="text-align:right;color:var(--g)">€ ${f2(v.pagato)}</td>
+          <td style="text-align:right;font-weight:700;color:var(--red)">€ ${f2(v.residuo)}</td>
+        </tr>`).join('')}
+        <tr style="background:#FFF5F5"><td colspan="4" style="text-align:right;font-weight:700;padding:8px 9px">Subtotale residuo</td>
+          <td style="text-align:right;font-weight:700;color:var(--red);font-size:14px">€ ${f2(d.subtotale)}</td></tr>
+        </tbody></table>
+      </div>
+    </div>`).join('');
+}
+
+function toggleDeb(i){
+  const b=document.getElementById('deb-body-'+i);const c=document.getElementById('chev-'+i);
+  b.classList.toggle('open');c.style.transform=b.classList.contains('open')?'rotate(180deg)':'';
+}
+</script>
+</body>
+</html>
