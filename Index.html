@@ -413,7 +413,15 @@ tr:hover td{background:#F5FBF7}
           </div>
           <div class="card-body">
             <div class="filters">
-              <input type="text" id="f-mov-q" placeholder="🔍 Cerca motivazione…" oninput="loadMovimenti()">
+              <input type="text" id="f-mov-q" placeholder="🔍 Cerca motivazione, tipo, metodo…" oninput="loadMovimenti()">
+              <div style="position:relative;flex:1;min-width:160px">
+                <input type="text" id="f-mov-socio-q" placeholder="👤 Filtra per socio..." oninput="socioAutocomplete()" autocomplete="off" style="width:100%">
+                <div id="socio-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--g);border-radius:8px;z-index:200;max-height:200px;overflow-y:auto;box-shadow:var(--shadow-lg)"></div>
+              </div>
+              <div id="socio-badge-wrap" style="display:none;align-items:center;gap:6px">
+                <span class="badge bb" id="socio-badge-label">—</span>
+                <button onclick="resetSocioFilter()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px;padding:2px"><i class="ti ti-x"></i></button>
+              </div>
               <select id="f-mov-tp" onchange="loadMovimenti()">
                 <option value="">Tutti i tipi</option>
                 <option>Entrata</option><option>Uscita</option>
@@ -579,17 +587,171 @@ tr:hover td{background:#F5FBF7}
             <tbody id="tb-deb-gadget"></tbody>
           </table></div>
         </div>
-        <!-- Catalogo gadget disponibili -->
-        <div class="card">
-          <div class="card-head"><div class="card-title"><i class="ti ti-package"></i> Catalogo Gadget Disponibili</div></div>
+        <!-- Situazione Quote -->
+        <div class="card" id="card-quote-socio">
+          <div class="card-head"><div class="card-title"><i class="ti ti-receipt-2"></i> Situazione Quote</div></div>
+          <div class="card-body" id="div-quote-socio">
+            <div class="loader"><div class="spinner"></div> Caricamento...</div>
+          </div>
+        </div>
+
+        <!-- Anticipo attivo (sola lettura) -->
+        <div class="card" id="card-anticipo-socio" style="display:none">
+          <div class="card-head"><div class="card-title"><i class="ti ti-arrow-forward-up" style="color:var(--warn)"></i> Debito Anticipo Attivo</div></div>
           <div class="ox"><table>
-            <thead><tr><th>Codice</th><th>Nome</th><th>Categoria</th><th>Disponibilità</th><th>Prezzo Soci</th></tr></thead>
-            <tbody id="tb-catalogo-gadget"></tbody>
+            <thead><tr><th>Data</th><th>Descrizione</th><th>Erogato</th><th>Restituito</th><th>Residuo</th><th>Stato</th></tr></thead>
+            <tbody id="tb-anticipo-socio"></tbody>
+          </table></div>
+        </div>
+
+        <!-- Store gadget disponibili con form ordine -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="ti ti-package"></i> Store Gadget</div>
+            <span style="font-size:11px;color:var(--txt3)">Prezzi riservati soci</span>
+          </div>
+          <div class="card-body">
+            <div class="filters">
+              <input type="text" id="f-store-q" placeholder="🔍 Cerca gadget..." oninput="filterStore()">
+              <select id="f-store-cat" onchange="filterStore()">
+                <option value="">Tutte le categorie</option>
+                <option>Gadget</option><option>Abbigliamento</option><option>Patch</option><option>Vino</option>
+              </select>
+            </div>
+            <div class="ox"><table>
+              <thead><tr><th>Codice</th><th>Nome</th><th>Categoria</th><th>Disponibilità</th><th>Prezzo</th><th>Ordina</th></tr></thead>
+              <tbody id="tb-store-gadget"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- Form richiesta rimborso socio -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="ti ti-cash-banknote"></i> Richiedi Rimborso</div>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Tipo spesa</label>
+                <select id="sr-tipo">
+                  <option>Carburante</option><option>Vitto</option><option>Alloggio</option>
+                  <option>Materiale</option><option>Quota evento</option><option>Altro</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Data spesa</label>
+                <input type="date" id="sr-data">
+              </div>
+            </div>
+            <div class="form-group"><label>Descrizione *</label>
+              <textarea id="sr-desc" rows="2" placeholder="Descrivi la spesa per cui chiedi il rimborso..."></textarea>
+            </div>
+            <div class="form-group"><label>Importo richiesto (€) *</label>
+              <input type="number" id="sr-importo" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <button class="btn btn-primary" onclick="saveRimborsoSocio()"><i class="ti ti-send"></i> Invia Richiesta</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Portale Socio — Quote -->
+      <div class="page" id="page-portale-quote">
+        <div class="kgrid" id="pq-kpi"></div>
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="ti ti-receipt-2"></i> Situazione Quote Annuali</div></div>
+          <div class="card-body" id="pq-body">
+            <div class="loader"><div class="spinner"></div> Caricamento...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Portale Socio — Store -->
+      <div class="page" id="page-portale-store">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="ti ti-shopping-bag"></i> Store Gadget</div>
+            <span style="font-size:11px;color:var(--txt3)">Prezzi riservati soci</span>
+          </div>
+          <div class="card-body">
+            <div class="filters">
+              <input type="text" id="f-store2-q" placeholder="🔍 Cerca gadget..." oninput="filterStore2()">
+              <select id="f-store2-cat" onchange="filterStore2()">
+                <option value="">Tutte le categorie</option>
+                <option>Gadget</option><option>Abbigliamento</option><option>Patch</option><option>Vino</option>
+              </select>
+            </div>
+            <div class="ox"><table>
+              <thead><tr><th>Codice</th><th>Nome</th><th>Categoria</th><th>Disponibilità</th><th>Prezzo</th><th>Ordina</th></tr></thead>
+              <tbody id="tb-store2-gadget"></tbody>
+            </table></div>
+          </div>
+        </div>
+        <div class="card" id="card-miei-gadget2">
+          <div class="card-head"><div class="card-title"><i class="ti ti-clock-history"></i> I Miei Acquisti</div></div>
+          <div class="ox"><table>
+            <thead><tr><th>Data</th><th>Gadget</th><th>Qtà</th><th>Dovuto</th><th>Pagato</th><th>Residuo</th><th>Stato</th></tr></thead>
+            <tbody id="tb-miei-gadget2"></tbody>
           </table></div>
         </div>
       </div>
 
-      <!-- Impostazioni -->
+      <!-- Portale Socio — Rimborsi -->
+      <div class="page" id="page-portale-rimborsi">
+        <div class="kgrid" id="pr-kpi"></div>
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="ti ti-cash-banknote"></i> Le Mie Richieste Rimborso</div></div>
+          <div class="ox"><table>
+            <thead><tr><th>Data</th><th>Tipo</th><th>Descrizione</th><th>Richiesto</th><th>Approvato</th><th>Stato</th></tr></thead>
+            <tbody id="tb-miei-rimborsi2"></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="ti ti-plus"></i> Nuova Richiesta</div></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Tipo spesa</label>
+                <select id="sr2-tipo">
+                  <option>Carburante</option><option>Vitto</option><option>Alloggio</option>
+                  <option>Materiale</option><option>Quota evento</option><option>Altro</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Data spesa</label><input type="date" id="sr2-data"></div>
+            </div>
+            <div class="form-group"><label>Descrizione *</label>
+              <textarea id="sr2-desc" rows="2" placeholder="Descrivi la spesa..."></textarea>
+            </div>
+            <div class="form-group"><label>Importo richiesto (€) *</label>
+              <input type="number" id="sr2-importo" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <button class="btn btn-primary" onclick="saveRimborsoSocio2()"><i class="ti ti-send"></i> Invia Richiesta</button>
+            <div id="sr2-msg" style="margin-top:.8rem;font-size:13px;display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin — Debiti Gadget Aperti -->
+      <div class="page" id="page-debiti-gadget">
+        <div class="kgrid" id="dg-kpi"></div>
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="ti ti-shopping-bag"></i> Debiti Gadget Aperti</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="openModal('modal-omaggio')"><i class="ti ti-gift"></i> Omaggio</button>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-debito-gadget')"><i class="ti ti-plus"></i> Nuovo Debito</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="filters">
+              <input type="text" id="f-dg-q" placeholder="🔍 Cerca socio o gadget..." oninput="loadDebitiGadget()">
+            </div>
+            <div class="ox"><table>
+              <thead><tr><th>Data</th><th>Debitore</th><th>Gadget</th><th>Qtà</th><th>Dovuto</th><th>Pagato</th><th>Residuo</th><th>Stato</th><th>Azioni</th></tr></thead>
+              <tbody id="tb-debiti-gadget"></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+
       <div class="page" id="page-settings">
         <div class="card" style="max-width:480px">
           <div class="card-head"><div class="card-title"><i class="ti ti-lock"></i> Cambio Password</div></div>
@@ -612,9 +774,158 @@ tr:hover td{background:#F5FBF7}
   </div>
 </div>
 
-<!-- ═══ MODALI ═══ -->
+<!-- Omaggio Gadget -->
+<div class="modal-overlay" id="modal-omaggio">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Registra Omaggio Gadget</div>
+      <button class="modal-close" onclick="closeModal('modal-omaggio')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#FEF3CD;border:1px solid #F5C518;border-radius:8px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#7B5A00">
+        <i class="ti ti-gift" style="margin-right:6px"></i>Il gadget verrà ceduto a €0. La perdita (costo acquisto × qtà) verrà taggata nelle note.
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Data *</label><input id="om-data" type="date"></div>
+        <div class="form-group"><label>Socio destinatario</label>
+          <select id="om-socio"><option value="">— Seleziona socio —</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Gadget *</label>
+        <select id="om-gadget" onchange="onOmaggioGadgetChange()"><option value="">— Seleziona gadget —</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Quantità</label><input id="om-qty" type="number" value="1" min="1" oninput="onOmaggioGadgetChange()"></div>
+        <div class="form-group"><label>Perdita stimata</label>
+          <input id="om-perdita" readonly style="background:#f5f5f5;font-weight:700;color:var(--red)" placeholder="— €">
+        </div>
+      </div>
+      <div class="form-group"><label>Note aggiuntive</label><textarea id="om-note" rows="2" placeholder="Motivazione omaggio..."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-omaggio')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveOmaggio()"><i class="ti ti-gift"></i> Registra Omaggio</button>
+    </div>
+  </div>
+</div>
 
-<!-- Nuovo Socio -->
+<!-- Registra Debito Gadget -->
+<div class="modal-overlay" id="modal-debito-gadget">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Registra Debito Gadget</div>
+      <button class="modal-close" onclick="closeModal('modal-debito-gadget')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Data *</label><input id="dg-data" type="date"></div>
+        <div class="form-group"><label>Tipo debitore</label>
+          <select id="dg-tipo-deb" onchange="onTipoDebitoreChange()">
+            <option value="socio">Socio</option>
+            <option value="esterno">Esterno (non socio)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" id="dg-socio-wrap"><label>Socio *</label>
+        <select id="dg-socio"><option value="">— Seleziona socio —</option></select>
+      </div>
+      <div class="form-group" id="dg-esterno-wrap" style="display:none"><label>Nome debitore esterno *</label>
+        <input id="dg-esterno" placeholder="Nome e cognome...">
+      </div>
+      <div class="form-group"><label>Gadget *</label>
+        <select id="dg-gadget" onchange="onDebitoGadgetChange()"><option value="">— Seleziona gadget —</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Quantità</label><input id="dg-qty" type="number" value="1" min="1" oninput="onDebitoGadgetChange()"></div>
+        <div class="form-group"><label>Importo dovuto (€)</label><input id="dg-importo" type="number" step="0.01" value="0"></div>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
+          <input type="checkbox" id="dg-no-magazzino" style="width:16px;height:16px">
+          Non scalare magazzino (inserimento retroattivo)
+        </label>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px;margin-left:24px">Usa solo se il gadget è già stato fisicamente consegnato e il magazzino è già corretto</div>
+      </div>
+      <div class="form-group"><label>Note</label><textarea id="dg-note" rows="2" placeholder="Note sul debito..."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-debito-gadget')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveDebitoGadget()"><i class="ti ti-check"></i> Registra Debito</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pagamento / Saldo Debito Gadget -->
+<div class="modal-overlay" id="modal-paga-debito">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Registra Pagamento Debito</div>
+      <button class="modal-close" onclick="closeModal('modal-paga-debito')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pd-vendita-id">
+      <div style="background:var(--gl);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:1rem;font-size:13px" id="pd-riepilogo">—</div>
+      <div class="form-row">
+        <div class="form-group"><label>Data pagamento</label><input id="pd-data" type="date"></div>
+        <div class="form-group"><label>Metodo</label>
+          <select id="pd-metodo"><option>Contanti</option><option>Bonifico</option><option>POS</option><option>Altro</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Conto accredito</label>
+          <select id="pd-conto"><option>Cassaforte</option><option>Conto Bancario</option></select>
+        </div>
+        <div class="form-group"><label>Importo pagato (€) *</label>
+          <input id="pd-importo" type="number" step="0.01" min="0" placeholder="0.00">
+        </div>
+      </div>
+      <div class="form-group"><label>Note</label><textarea id="pd-note" rows="2"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-paga-debito')">Annulla</button>
+      <button class="btn btn-primary" onclick="savePagamentoDebito()"><i class="ti ti-check"></i> Registra Pagamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ordine Store Socio -->
+<div class="modal-overlay" id="modal-ordine-store">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Richiedi Gadget</div>
+      <button class="modal-close" onclick="closeModal('modal-ordine-store')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="os-gadget-id">
+      <div style="background:var(--gl);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:1rem" id="os-riepilogo">—</div>
+      <div class="form-row">
+        <div class="form-group"><label>Quantità</label>
+          <input id="os-qty" type="number" value="1" min="1" oninput="onOrdineQtyChange()">
+        </div>
+        <div class="form-group"><label>Totale stimato</label>
+          <input id="os-totale" readonly style="background:#f5f5f5;font-weight:700;color:var(--gd)" placeholder="— €">
+        </div>
+      </div>
+      <div class="form-group"><label>Modalità</label>
+        <select id="os-modalita">
+          <option value="Richiesto">Solo prenotazione (pagamento successivo)</option>
+          <option value="Pagato">Già pagato</option>
+        </select>
+      </div>
+      <div class="form-group" id="os-pagato-wrap" style="display:none">
+        <label>Importo già pagato (€)</label>
+        <input id="os-pagato" type="number" step="0.01" min="0" value="0">
+      </div>
+      <div class="form-group"><label>Note</label><textarea id="os-note" rows="2" placeholder="Taglia, colore, note particolari..."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-ordine-store')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveOrdineStore()"><i class="ti ti-shopping-cart"></i> Invia Richiesta</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="modal-overlay" id="modal-socio">
   <div class="modal">
     <div class="modal-head">
@@ -1025,6 +1336,7 @@ function buildNav() {
     { id:'vendite', icon:'ti-shopping-cart', label:'Vendite & Ritiri' },
     { section: 'FINANZIARIO' },
     { id:'debiti', icon:'ti-receipt-2', label:'Debiti Quote' },
+    { id:'debiti-gadget', icon:'ti-shopping-bag', label:'Debiti Gadget', badge:'dg' },
     { id:'rimborsi', icon:'ti-cash-banknote', label:'Rimborsi' },
     { id:'anticipi', icon:'ti-arrow-forward-up', label:'Anticipi' },
     { section: 'SISTEMA' },
@@ -1033,6 +1345,10 @@ function buildNav() {
   const socioItems = [
     { section: 'MIO PROFILO' },
     { id:'portale', icon:'ti-user-circle', label:'Il Mio Profilo' },
+    { section: 'SEZIONI' },
+    { id:'portale-quote', icon:'ti-receipt-2', label:'Quote' },
+    { id:'portale-store', icon:'ti-shopping-bag', label:'Store Gadget' },
+    { id:'portale-rimborsi', icon:'ti-cash-banknote', label:'Rimborsi' },
     { section: 'SISTEMA' },
     { id:'settings', icon:'ti-settings', label:'Impostazioni' },
   ];
@@ -1051,10 +1367,22 @@ function navigate(pageId) {
   const nav = document.getElementById('nav-'+pageId);
   if(page) page.classList.add('active');
   if(nav) nav.classList.add('active');
-  const titles = {dash:'Dashboard',soci:'Registro Soci',cassa:'Cassa & Movimenti',gadget:'Catalogo Gadget',vendite:'Vendite & Ritiri',debiti:'Debiti Quote',rimborsi:'Rimborsi',anticipi:'Anticipi',portale:'Il Mio Profilo',settings:'Impostazioni'};
+  const titles = {
+    dash:'Dashboard',soci:'Registro Soci',cassa:'Cassa & Movimenti',
+    gadget:'Catalogo Gadget',vendite:'Vendite & Ritiri',debiti:'Debiti Quote',
+    'debiti-gadget':'Debiti Gadget',rimborsi:'Rimborsi',anticipi:'Anticipi',
+    portale:'Il Mio Profilo','portale-quote':'Quote','portale-store':'Store Gadget',
+    'portale-rimborsi':'Rimborsi',settings:'Impostazioni'
+  };
   document.getElementById('topbar-title').textContent = titles[pageId]||pageId;
   closeSb();
-  const loaders = {dash:loadDash,soci:loadSoci,cassa:loadCassa,gadget:loadGadget,vendite:loadVendite,debiti:loadDebiti,rimborsi:loadRimborsi,anticipi:loadAnticip,portale:loadPortale};
+  const loaders = {
+    dash:loadDash,soci:loadSoci,cassa:loadCassa,gadget:loadGadget,
+    vendite:loadVendite,debiti:loadDebiti,'debiti-gadget':loadDebitiGadget,
+    rimborsi:loadRimborsi,anticipi:loadAnticip,portale:loadPortale,
+    'portale-quote':loadPortaleQuote,'portale-store':loadPortaleStore,
+    'portale-rimborsi':loadPortaleRimborsi
+  };
   if(loaders[pageId]) loaders[pageId]();
 }
 
@@ -1249,7 +1577,10 @@ async function loadMovimenti() {
   if(fT) query = query.eq('tipo',fT);
   if(fC) query = query.eq('conto',fC);
   const { data } = await query;
-  let list = (data||[]).filter(m=>!q||( m.motivazione||'' ).toLowerCase().includes(q));
+  let list = (data||[]).filter(m=>{
+    if(q && !(m.motivazione||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
   document.getElementById('tb-movimenti').innerHTML = list.length ? list.map(m=>`<tr>
     <td style="white-space:nowrap;font-size:12px">${m.data}</td>
     <td>${tipoBadge(m.tipo)}</td>
@@ -1725,10 +2056,449 @@ window.addEventListener('DOMContentLoaded', async () => {
 const origOpenModal = openModal;
 window.openModal = async function(id) {
   origOpenModal(id);
-  if(['modal-vendita','modal-rimborso','modal-anticipo'].includes(id)) await populateSelects();
-  // Reset date fields
+  if(['modal-vendita','modal-rimborso','modal-anticipo','modal-debito-gadget','modal-omaggio'].includes(id)) await populateSelects();
+  if(id==='modal-debito-gadget') { document.getElementById('dg-data').value=today(); onTipoDebitoreChange(); }
+  if(id==='modal-omaggio') { document.getElementById('om-data').value=today(); }
   document.querySelectorAll(`#${id} input[type="date"]`).forEach(el => { if(!el.value) el.value = today(); });
 };
+
+// ═══════════════════════════════════════════════════════
+// AUTOCOMPLETE SOCIO IN CASSA
+// ═══════════════════════════════════════════════════════
+let filtroSocioId = null;
+let socioACTimer = null;
+
+async function socioAutocomplete() {
+  const q = (document.getElementById('f-mov-socio-q')?.value||'').toLowerCase().trim();
+  const dd = document.getElementById('socio-dropdown');
+  if(!q || q.length < 2) { dd.style.display='none'; return; }
+  clearTimeout(socioACTimer);
+  socioACTimer = setTimeout(async () => {
+    const { data } = await sb.from('soci').select('id,codice,nome,cognome').eq('stato','Attivo').order('cognome');
+    const matches = (data||[]).filter(s=>(s.codice+s.cognome+s.nome).toLowerCase().includes(q)).slice(0,8);
+    if(!matches.length) { dd.style.display='none'; return; }
+    dd.innerHTML = matches.map(s=>`<div onclick="setSocioFilter('${s.id}','${(s.cognome+' '+s.nome).replace(/'/g,"\\'")}')"
+      style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:0.5px solid #eee"
+      onmouseover="this.style.background='var(--gl)'" onmouseout="this.style.background=''">${s.codice} — ${s.cognome} ${s.nome}</div>`).join('');
+    dd.style.display='block';
+  }, 280);
+}
+
+function setSocioFilter(id, nome) {
+  filtroSocioId = id;
+  document.getElementById('socio-dropdown').style.display='none';
+  document.getElementById('f-mov-socio-q').value='';
+  document.getElementById('f-mov-socio-q').placeholder=nome;
+  document.getElementById('socio-badge-wrap').style.display='flex';
+  document.getElementById('socio-badge-label').textContent=nome;
+  loadMovimenti();
+}
+
+function resetSocioFilter() {
+  filtroSocioId=null;
+  document.getElementById('f-mov-socio-q').placeholder='👤 Filtra per socio...';
+  document.getElementById('socio-badge-wrap').style.display='none';
+  loadMovimenti();
+}
+
+// Chiudi dropdown cliccando fuori
+document.addEventListener('click', e => {
+  const dd=document.getElementById('socio-dropdown');
+  if(dd&&!dd.contains(e.target)&&e.target.id!=='f-mov-socio-q') dd.style.display='none';
+});
+
+// ═══════════════════════════════════════════════════════
+// DEBITI GADGET ADMIN
+// ═══════════════════════════════════════════════════════
+async function loadDebitiGadget() {
+  const q=(document.getElementById('f-dg-q')?.value||'').toLowerCase();
+  const { data } = await sb.from('vendite_gadget').select('*').gt('debito_residuo',0).order('data',{ascending:false});
+  let list=(data||[]).filter(v=>!q||(v.gadget_nome+' '+(v.socio_esterno||'')).toLowerCase().includes(q));
+  const totRes=(data||[]).reduce((a,v)=>a+(+v.debito_residuo||0),0);
+  const esterni=(data||[]).filter(v=>!v.socio_id).length;
+  document.getElementById('dg-kpi').innerHTML=`
+    <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Debiti Aperti</div><div class="kpi-val neg">${(data||[]).length}</div></div>
+    <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Residuo Totale</div><div class="kpi-val neg">€ ${f2(totRes)}</div></div>
+    <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Debitori Esterni</div><div class="kpi-val warn">${esterni}</div></div>`;
+  document.getElementById('tb-debiti-gadget').innerHTML=list.length?list.map(v=>{
+    const isEst=!v.socio_id;
+    const nom=(v.socio_esterno||'—').replace(/'/g,"\\'");
+    const gnom=(v.gadget_nome||'').replace(/'/g,"\\'");
+    return `<tr>
+      <td style="white-space:nowrap;font-size:12px">${v.data}</td>
+      <td style="font-size:12px">${isEst?'<span class="badge ba">ESTERNO</span> ':''}<span>${v.socio_esterno||'—'}</span></td>
+      <td style="font-size:12px">${v.gadget_nome||'—'}</td>
+      <td style="text-align:right">${v.quantita}</td>
+      <td style="text-align:right">€ ${f2(v.importo_dovuto)}</td>
+      <td style="text-align:right;color:var(--g)">€ ${f2(v.importo_pagato)}</td>
+      <td style="text-align:right;font-weight:700;color:var(--red)">€ ${f2(v.debito_residuo)}</td>
+      <td>${statoBadge(v.stato)}</td>
+      <td><button class="btn btn-primary btn-sm" onclick="apriPagamentoDebito('${v.id}','${nom}','${gnom}',${v.debito_residuo})"><i class="ti ti-coin"></i> Paga</button></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="9" class="empty"><i class="ti ti-circle-check"></i>Nessun debito aperto</td></tr>`;
+}
+
+function apriPagamentoDebito(id,debitore,gadget,residuo) {
+  document.getElementById('pd-vendita-id').value=id;
+  document.getElementById('pd-riepilogo').innerHTML=`<strong>${debitore}</strong> — ${gadget}<br>Residuo: <strong style="color:var(--red)">€ ${f2(residuo)}</strong>`;
+  document.getElementById('pd-importo').value=residuo;
+  document.getElementById('pd-data').value=today();
+  document.getElementById('pd-note').value='';
+  openModal('modal-paga-debito');
+}
+
+async function savePagamentoDebito() {
+  const id=document.getElementById('pd-vendita-id').value;
+  const importo=+document.getElementById('pd-importo').value||0;
+  if(!importo){toast('Inserisci un importo','err');return;}
+  const {data:v}=await sb.from('vendite_gadget').select('*').eq('id',id).single();
+  if(!v){toast('Vendita non trovata','err');return;}
+  const nuovoPagato=(+v.importo_pagato||0)+importo;
+  const nuovoResiduo=Math.max(0,(+v.importo_dovuto||0)-nuovoPagato);
+  const nuovoStato=nuovoResiduo<=0?'Pagato':'Ritirato';
+  const note=document.getElementById('pd-note').value;
+  const [,]= await Promise.all([
+    sb.from('vendite_gadget').update({
+      importo_pagato:nuovoPagato,debito_residuo:nuovoResiduo,stato:nuovoStato,
+      note:note?`${v.note||''}\n[Pag. ${today()}: €${f2(importo)}${note?' — '+note:''}]`.trim():v.note
+    }).eq('id',id),
+    sb.from('movimenti_cassa').insert({
+      data:document.getElementById('pd-data').value||today(),
+      tipo:'Entrata',conto:document.getElementById('pd-conto').value,
+      metodo:document.getElementById('pd-metodo').value,importo,
+      motivazione:`Pagamento debito gadget — ${v.gadget_nome||'—'} (${v.socio_esterno||'—'})`,verificato:true
+    })
+  ]);
+  if(v.socio_id){
+    const {data:s}=await sb.from('soci').select('debito_gadget').eq('id',v.socio_id).single();
+    if(s) await sb.from('soci').update({debito_gadget:Math.max(0,(+s.debito_gadget||0)-importo)}).eq('id',v.socio_id);
+  }
+  toast('Pagamento registrato!','ok');
+  closeModal('modal-paga-debito');
+  loadDebitiGadget();
+}
+
+// ═══════════════════════════════════════════════════════
+// REGISTRA DEBITO GADGET
+// ═══════════════════════════════════════════════════════
+function onTipoDebitoreChange(){
+  const t=document.getElementById('dg-tipo-deb').value;
+  document.getElementById('dg-socio-wrap').style.display=t==='socio'?'':'none';
+  document.getElementById('dg-esterno-wrap').style.display=t==='esterno'?'':'none';
+}
+async function onDebitoGadgetChange(){
+  const gId=document.getElementById('dg-gadget').value;
+  if(!gId)return;
+  const {data:g}=await sb.from('gadget').select('prezzo_soci').eq('id',gId).single();
+  const qty=+document.getElementById('dg-qty').value||1;
+  if(g) document.getElementById('dg-importo').value=((g.prezzo_soci||0)*qty).toFixed(2);
+}
+async function saveDebitoGadget(){
+  const tipo=document.getElementById('dg-tipo-deb').value;
+  const gadgetSel=document.getElementById('dg-gadget');
+  const gId=gadgetSel.value;
+  if(!gId){toast('Seleziona un gadget','err');return;}
+  const gNome=gadgetSel.options[gadgetSel.selectedIndex]?.text.split(' — ')[1]||gadgetSel.options[gadgetSel.selectedIndex]?.text||'';
+  let socioId=null,socioNome='';
+  if(tipo==='socio'){
+    const s=document.getElementById('dg-socio');
+    socioId=s.value||null;
+    socioNome=s.options[s.selectedIndex]?.text||'';
+    if(!socioId){toast('Seleziona un socio','err');return;}
+  } else {
+    socioNome=document.getElementById('dg-esterno').value.trim();
+    if(!socioNome){toast('Inserisci il nome del debitore','err');return;}
+  }
+  const qty=+document.getElementById('dg-qty').value||1;
+  const importo=+document.getElementById('dg-importo').value||0;
+  const noMag=document.getElementById('dg-no-magazzino').checked;
+  let note=document.getElementById('dg-note').value||'';
+  if(noMag) note=`[Magazzino non scalato — inserimento retroattivo]\n${note}`.trim();
+  const {error}=await sb.from('vendite_gadget').insert({
+    data:document.getElementById('dg-data').value||today(),
+    socio_id:socioId,socio_esterno:socioNome,
+    gadget_id:gId,gadget_nome:gNome,
+    quantita:qty,importo_dovuto:importo,importo_pagato:0,debito_residuo:importo,
+    stato:'Ritirato',tipo_debito:'Gadget',note
+  });
+  if(error){toast('Errore: '+error.message,'err');return;}
+  if(!noMag){
+    const {data:gd}=await sb.from('gadget').select('disponibilita').eq('id',gId).single();
+    if(gd&&!isNaN(+gd.disponibilita)) await sb.from('gadget').update({disponibilita:Math.max(0,(+gd.disponibilita||0)-qty).toString()}).eq('id',gId);
+  }
+  if(socioId){
+    const {data:sd}=await sb.from('soci').select('debito_gadget').eq('id',socioId).single();
+    if(sd) await sb.from('soci').update({debito_gadget:(+sd.debito_gadget||0)+importo}).eq('id',socioId);
+  }
+  toast('Debito registrato!','ok');
+  closeModal('modal-debito-gadget');
+  loadDebitiGadget();
+}
+
+// ═══════════════════════════════════════════════════════
+// OMAGGIO GADGET
+// ═══════════════════════════════════════════════════════
+async function onOmaggioGadgetChange(){
+  const gId=document.getElementById('om-gadget').value;
+  if(!gId){document.getElementById('om-perdita').value='';return;}
+  const {data:g}=await sb.from('gadget').select('costo_acquisto').eq('id',gId).single();
+  const qty=+document.getElementById('om-qty').value||1;
+  const perdita=(g?.costo_acquisto||0)*qty;
+  document.getElementById('om-perdita').value=perdita>0?`€ ${f2(perdita)}`:'€ 0,00 (costo n.d.)';
+}
+async function saveOmaggio(){
+  const gadgetSel=document.getElementById('om-gadget');
+  const gId=gadgetSel.value;
+  if(!gId){toast('Seleziona un gadget','err');return;}
+  const gNome=gadgetSel.options[gadgetSel.selectedIndex]?.text.split(' — ')[1]||gadgetSel.options[gadgetSel.selectedIndex]?.text||'';
+  const qty=+document.getElementById('om-qty').value||1;
+  const {data:g}=await sb.from('gadget').select('costo_acquisto,disponibilita').eq('id',gId).single();
+  const perdita=(g?.costo_acquisto||0)*qty;
+  const socioSel=document.getElementById('om-socio');
+  const socioId=socioSel.value||null;
+  const socioNome=socioSel.value?(socioSel.options[socioSel.selectedIndex]?.text||''):'Omaggio';
+  const noteBase=document.getElementById('om-note').value||'';
+  const noteFinale=`[OMAGGIO — Perdita: € ${f2(perdita)}]${noteBase?'\n'+noteBase:''}`;
+  const {error}=await sb.from('vendite_gadget').insert({
+    data:document.getElementById('om-data').value||today(),
+    socio_id:socioId,socio_esterno:socioNome,
+    gadget_id:gId,gadget_nome:gNome,
+    quantita:qty,importo_dovuto:0,importo_pagato:0,debito_residuo:0,
+    stato:'Pagato',tipo_debito:null,note:noteFinale
+  });
+  if(error){toast('Errore: '+error.message,'err');return;}
+  if(g&&!isNaN(+g.disponibilita)) await sb.from('gadget').update({disponibilita:Math.max(0,(+g.disponibilita||0)-qty).toString()}).eq('id',gId);
+  toast('Omaggio registrato!','ok');
+  closeModal('modal-omaggio');
+}
+
+// ═══════════════════════════════════════════════════════
+// PORTALE SOCIO — QUOTE
+// ═══════════════════════════════════════════════════════
+async function loadPortaleQuote(){
+  if(!currentUser||currentUser.role==='admin')return;
+  const s=currentUser;
+  const dq=+s.debito_quote||0;
+  document.getElementById('pq-kpi').innerHTML=`
+    <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Saldato fino a</div><div class="kpi-val" style="font-size:18px">${s.saldato_fino||'—'}</div></div>
+    <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Debito Quote</div><div class="kpi-val ${dq>0?'neg':''}">€ ${f2(dq)}</div></div>`;
+  const mesi=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const anno=new Date().getFullYear();
+  const m=( s.saldato_fino||'').match(/(\w+)\s+(\d{4})/i);
+  let meseOk=-1,annoOk=0;
+  if(m){meseOk=mesi.findIndex(x=>x.toLowerCase()===m[1].toLowerCase());annoOk=+m[2];}
+  const rows=mesi.map((mn,i)=>{
+    const pagato=annoOk>anno||(annoOk===anno&&i<=meseOk);
+    return `<tr><td>${mn} ${anno}</td><td><span class="badge ${pagato?'bg':'br'}">${pagato?'Pagato':'Non pagato'}</span></td></tr>`;
+  }).join('');
+  document.getElementById('pq-body').innerHTML=`
+    <p style="font-size:13px;margin-bottom:1rem">${dq>0
+      ?`<span style="color:var(--red);font-weight:700">⚠ Debito aperto: € ${f2(dq)}</span> — Contatta l'amministratore.`
+      :'<span style="color:var(--g);font-weight:700">✓ Nessun debito quote.</span>'}</p>
+    <table><thead><tr><th>Mese</th><th>Stato</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// PORTALE SOCIO — STORE
+// ═══════════════════════════════════════════════════════
+let storeData=[];
+async function loadPortaleStore(){
+  if(!currentUser||currentUser.role==='admin')return;
+  const [{data:gadgets},{data:acquisti}]=await Promise.all([
+    sb.from('gadget').select('*').neq('disponibilita','Esaurito').order('nome'),
+    sb.from('vendite_gadget').select('*').eq('socio_id',currentUser.id).order('data',{ascending:false})
+  ]);
+  storeData=gadgets||[];
+  renderStore2(storeData);
+  document.getElementById('tb-miei-gadget2').innerHTML=(acquisti||[]).length?(acquisti||[]).map(v=>`<tr>
+    <td style="font-size:12px;white-space:nowrap">${v.data}</td><td>${v.gadget_nome||'—'}</td>
+    <td style="text-align:right">${v.quantita}</td>
+    <td style="text-align:right">€ ${f2(v.importo_dovuto)}</td>
+    <td style="text-align:right;color:var(--g)">€ ${f2(v.importo_pagato)}</td>
+    <td style="text-align:right;font-weight:700;color:${+v.debito_residuo>0?'var(--red)':'var(--g)'}">€ ${f2(v.debito_residuo)}</td>
+    <td>${statoBadge(v.stato)}</td>
+  </tr>`).join(''):`<tr><td colspan="7" class="empty"><i class="ti ti-package"></i>Nessun acquisto</td></tr>`;
+}
+function filterStore2(){
+  const q=(document.getElementById('f-store2-q')?.value||'').toLowerCase();
+  const cat=document.getElementById('f-store2-cat')?.value||'';
+  renderStore2(storeData.filter(g=>{if(q&&!(g.codice+g.nome).toLowerCase().includes(q))return false;if(cat&&g.categoria!==cat)return false;return true;}));
+}
+function renderStore2(list){
+  const catC={Gadget:'bb',Abbigliamento:'bp',Patch:'ba',Vino:'bt'};
+  document.getElementById('tb-store2-gadget').innerHTML=list.length?list.map(g=>`<tr>
+    <td style="font-weight:700;font-size:11px;color:var(--gd)">${g.codice}</td><td>${g.nome}</td>
+    <td><span class="badge ${catC[g.categoria]||'bgr'}">${g.categoria}</span></td>
+    <td><span class="badge ${g.disponibilita==='Da censire'?'ba':'bg'}">${g.disponibilita||'—'}</span></td>
+    <td style="font-weight:700">€ ${f2(g.prezzo_soci)}</td>
+    <td><button class="btn btn-primary btn-sm" onclick="apriOrdineStore('${g.id}')"><i class="ti ti-shopping-cart"></i> Ordina</button></td>
+  </tr>`).join(''):`<tr><td colspan="6" class="empty">Nessun gadget disponibile</td></tr>`;
+}
+function apriOrdineStore(gId){
+  const g=storeData.find(x=>x.id===gId);if(!g)return;
+  document.getElementById('os-gadget-id').value=gId;
+  document.getElementById('os-riepilogo').innerHTML=`<strong>${g.codice} — ${g.nome}</strong><br>Prezzo soci: <strong>€ ${f2(g.prezzo_soci)}</strong> · Disponibilità: ${g.disponibilita||'—'}`;
+  document.getElementById('os-qty').value=1;
+  document.getElementById('os-totale').value=`€ ${f2(g.prezzo_soci)}`;
+  document.getElementById('os-modalita').value='Richiesto';
+  document.getElementById('os-pagato-wrap').style.display='none';
+  document.getElementById('os-note').value='';
+  openModal('modal-ordine-store');
+}
+function onOrdineQtyChange(){
+  const g=storeData.find(x=>x.id===document.getElementById('os-gadget-id').value);
+  const qty=+document.getElementById('os-qty').value||1;
+  if(g) document.getElementById('os-totale').value=`€ ${f2((g.prezzo_soci||0)*qty)}`;
+}
+document.addEventListener('change',e=>{
+  if(e.target.id==='os-modalita') document.getElementById('os-pagato-wrap').style.display=e.target.value==='Pagato'?'':'none';
+});
+async function saveOrdineStore(){
+  const gId=document.getElementById('os-gadget-id').value;
+  const g=storeData.find(x=>x.id===gId);
+  if(!g||!currentUser)return;
+  const qty=+document.getElementById('os-qty').value||1;
+  const modalita=document.getElementById('os-modalita').value;
+  const dovuto=(g.prezzo_soci||0)*qty;
+  const pagato=modalita==='Pagato'?(+document.getElementById('os-pagato').value||dovuto):0;
+  const {error}=await sb.from('vendite_gadget').insert({
+    data:today(),socio_id:currentUser.id,
+    socio_esterno:`${currentUser.cognome} ${currentUser.nome}`,
+    gadget_id:gId,gadget_nome:g.nome,quantita:qty,
+    importo_dovuto:dovuto,importo_pagato:pagato,
+    debito_residuo:Math.max(0,dovuto-pagato),
+    stato:modalita,tipo_debito:pagato<dovuto?'Gadget':null,
+    note:document.getElementById('os-note').value
+  });
+  if(error){toast('Errore: '+error.message,'err');return;}
+  toast('Richiesta inviata! L\'admin la elaborerà presto.','ok');
+  closeModal('modal-ordine-store');
+  loadPortaleStore();
+}
+
+// ═══════════════════════════════════════════════════════
+// PORTALE SOCIO — RIMBORSI
+// ═══════════════════════════════════════════════════════
+async function loadPortaleRimborsi(){
+  if(!currentUser||currentUser.role==='admin')return;
+  const {data}=await sb.from('rimborsi').select('*').eq('socio_id',currentUser.id).order('data',{ascending:false});
+  const totR=(data||[]).reduce((a,r)=>a+(+r.importo_richiesto||0),0);
+  const totA=(data||[]).reduce((a,r)=>a+(+r.importo_approvato||0),0);
+  document.getElementById('pr-kpi').innerHTML=`
+    <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Richieste</div><div class="kpi-val">${(data||[]).length}</div></div>
+    <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Tot. Richiesto</div><div class="kpi-val">€ ${f2(totR)}</div></div>
+    <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Approvato</div><div class="kpi-val">€ ${f2(totA)}</div></div>`;
+  document.getElementById('tb-miei-rimborsi2').innerHTML=(data||[]).length?(data||[]).map(r=>`<tr>
+    <td style="white-space:nowrap;font-size:12px">${r.data}</td>
+    <td style="font-size:12px">${r.tipo_spesa||'—'}</td>
+    <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.descrizione||'—'}</td>
+    <td style="text-align:right">€ ${f2(r.importo_richiesto)}</td>
+    <td style="text-align:right;font-weight:700">€ ${f2(r.importo_approvato)}</td>
+    <td>${statoBadge(r.stato)}</td>
+  </tr>`).join(''):`<tr><td colspan="6" class="empty"><i class="ti ti-cash-banknote"></i>Nessuna richiesta</td></tr>`;
+  const el=document.getElementById('sr2-data');if(el)el.value=today();
+}
+async function saveRimborsoSocio2(){
+  const desc=document.getElementById('sr2-desc').value.trim();
+  const importo=+document.getElementById('sr2-importo').value||0;
+  const msg=document.getElementById('sr2-msg');
+  if(!desc||!importo){msg.textContent='Compila descrizione e importo';msg.style.cssText='display:block;color:var(--red)';return;}
+  const {data:cnt}=await sb.from('rimborsi').select('id',{count:'exact',head:true});
+  const {error}=await sb.from('rimborsi').insert({
+    numero:(cnt||0)+1,data:document.getElementById('sr2-data').value||today(),
+    socio_id:currentUser.id,tipo_spesa:document.getElementById('sr2-tipo').value,
+    descrizione:desc,importo_richiesto:importo,importo_approvato:0,stato:'In attesa'
+  });
+  if(error){msg.textContent='Errore: '+error.message;msg.style.cssText='display:block;color:var(--red)';return;}
+  msg.textContent='✅ Richiesta inviata!';msg.style.cssText='display:block;color:var(--g)';
+  document.getElementById('sr2-desc').value='';document.getElementById('sr2-importo').value='';
+  setTimeout(()=>{if(msg)msg.style.display='none';},3000);
+  loadPortaleRimborsi();
+}
+
+// Extend populateSelects per nuovi modali
+const _origPopSel=populateSelects;
+populateSelects=async function(){
+  await _origPopSel();
+  const {data:soci}=await sb.from('soci').select('id,codice,nome,cognome').eq('stato','Attivo').order('cognome');
+  const {data:gadget}=await sb.from('gadget').select('id,codice,nome').order('nome');
+  const socioOpts=`<option value="">— Seleziona socio —</option>`+(soci||[]).map(s=>`<option value="${s.id}">${s.codice} — ${s.cognome} ${s.nome}</option>`).join('');
+  const gadgetOpts=`<option value="">— Seleziona gadget —</option>`+(gadget||[]).map(g=>`<option value="${g.id}">${g.codice} — ${g.nome}</option>`).join('');
+  ['om-socio','dg-socio'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=socioOpts;});
+  ['om-gadget','dg-gadget'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=gadgetOpts;});
+};
+
+// Extend loadPortale per caricare anche store e anticipo
+const _origLoadPortale=loadPortale;
+loadPortale=async function(){
+  await _origLoadPortale();
+  if(currentUser&&currentUser.role==='socio'){
+    // Carica store nel profilo
+    const {data:gadgets}=await sb.from('gadget').select('*').neq('disponibilita','Esaurito').order('nome');
+    storeData=gadgets||[];
+    const el=document.getElementById('tb-store-gadget');
+    if(el) renderStoreMain(storeData);
+    // Anticipo attivo
+    const {data:anticipiSocio}=await sb.from('anticipi').select('*').eq('socio_id',currentUser.id).gt('residuo',0);
+    const cardAnticipo=document.getElementById('card-anticipo-socio');
+    if(cardAnticipo){
+      if((anticipiSocio||[]).length){
+        cardAnticipo.style.display='';
+        document.getElementById('tb-anticipo-socio').innerHTML=anticipiSocio.map(a=>`<tr>
+          <td style="font-size:12px;white-space:nowrap">${a.data}</td>
+          <td style="font-size:12px">${a.descrizione||'—'}</td>
+          <td style="text-align:right">€ ${f2(a.importo_dovuto)}</td>
+          <td style="text-align:right;color:var(--g)">€ ${f2(a.importo_pagato)}</td>
+          <td style="text-align:right;font-weight:700;color:var(--red)">€ ${f2(a.residuo)}</td>
+          <td>${statoBadge(a.stato)}</td>
+        </tr>`).join('');
+      } else { cardAnticipo.style.display='none'; }
+    }
+    // Richieste rimborso nel profilo
+    const {data:rimbs}=await sb.from('rimborsi').select('*').eq('socio_id',currentUser.id).order('data',{ascending:false});
+    const tbR=document.getElementById('tb-miei-rimborsi');
+    if(tbR) tbR.innerHTML=(rimbs||[]).length?(rimbs||[]).map(r=>`<tr>
+      <td style="white-space:nowrap;font-size:12px">${r.data}</td>
+      <td style="font-size:12px">${r.descrizione||'—'}</td>
+      <td style="font-weight:700">€ ${f2(r.importo_approvato)}</td>
+      <td>${statoBadge(r.stato)}</td>
+    </tr>`).join(''):`<tr><td colspan="4" class="empty"><i class="ti ti-cash-banknote"></i>Nessun rimborso</td></tr>`;
+    const elSrData=document.getElementById('sr-data');if(elSrData)elSrData.value=today();
+  }
+};
+
+function renderStoreMain(list){
+  const catC={Gadget:'bb',Abbigliamento:'bp',Patch:'ba',Vino:'bt'};
+  const el=document.getElementById('tb-store-gadget');if(!el)return;
+  el.innerHTML=list.length?list.map(g=>`<tr>
+    <td style="font-weight:700;font-size:11px;color:var(--gd)">${g.codice}</td><td>${g.nome}</td>
+    <td><span class="badge ${catC[g.categoria]||'bgr'}">${g.categoria}</span></td>
+    <td><span class="badge ${g.disponibilita==='Da censire'?'ba':'bg'}">${g.disponibilita||'—'}</span></td>
+    <td style="font-weight:700">€ ${f2(g.prezzo_soci)}</td>
+    <td><button class="btn btn-primary btn-sm" onclick="apriOrdineStore('${g.id}')"><i class="ti ti-shopping-cart"></i> Ordina</button></td>
+  </tr>`).join(''):`<tr><td colspan="6" class="empty">Nessun gadget disponibile</td></tr>`;
+}
+function filterStore(){
+  const q=(document.getElementById('f-store-q')?.value||'').toLowerCase();
+  const cat=document.getElementById('f-store-cat')?.value||'';
+  renderStoreMain(storeData.filter(g=>{if(q&&!(g.codice+g.nome).toLowerCase().includes(q))return false;if(cat&&g.categoria!==cat)return false;return true;}));
+}
+async function saveRimborsoSocio(){
+  const desc=document.getElementById('sr-desc').value.trim();
+  const importo=+document.getElementById('sr-importo').value||0;
+  if(!desc||!importo){toast('Compila descrizione e importo','err');return;}
+  const {data:cnt}=await sb.from('rimborsi').select('id',{count:'exact',head:true});
+  const {error}=await sb.from('rimborsi').insert({
+    numero:(cnt||0)+1,data:document.getElementById('sr-data').value||today(),
+    socio_id:currentUser.id,tipo_spesa:document.getElementById('sr-tipo').value,
+    descrizione:desc,importo_richiesto:importo,importo_approvato:0,stato:'In attesa'
+  });
+  if(error){toast('Errore: '+error.message,'err');return;}
+  toast('Richiesta rimborso inviata!','ok');
+  document.getElementById('sr-desc').value='';document.getElementById('sr-importo').value='';
+  loadPortale();
+}
+
 </script>
 </body>
 </html>
