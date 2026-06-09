@@ -1135,10 +1135,11 @@ async function loadSoci() {
   const q = (document.getElementById('f-soci-q')?.value||'').toLowerCase();
   const fS = document.getElementById('f-soci-st')?.value||'';
   const fC = document.getElementById('f-soci-ca')?.value||'';
-  let query = sb.from('soci').select('*').order('cognome');
+  let query = sb.from('soci').select('*');
   if(fS) query = query.eq('stato',fS);
   if(fC) query = query.eq('categoria',fC);
   const { data } = await query;
+  (data||[]).sort((a,b)=>{const na=parseInt((a.codice||'').replace(/\D/g,''))||0,nb=parseInt((b.codice||'').replace(/\D/g,''))||0;return na-nb;});
   let list = (data||[]).filter(s=>!q||(s.codice+s.cognome+s.nome).toLowerCase().includes(q));
   document.getElementById('tb-soci').innerHTML = list.length ? list.map(s=>`<tr>
     <td style="font-weight:700;color:var(--gd);font-size:12px">${s.codice}</td>
@@ -1417,8 +1418,9 @@ async function deleteVendita(id) {
 async function loadDebiti() {
   const q = (document.getElementById('f-deb-q')?.value||'').toLowerCase();
   const fi = document.getElementById('f-deb-fi')?.value||'';
-  let query = sb.from('soci').select('*').eq('stato','Attivo').order('debito_quote',{ascending:false});
+  let query = sb.from('soci').select('*').eq('stato','Attivo');
   const { data } = await query;
+  (data||[]).sort((a,b)=>{const na=parseInt((a.codice||'').replace(/\D/g,''))||0,nb=parseInt((b.codice||'').replace(/\D/g,''))||0;return na-nb;});
   let list = (data||[]).filter(s=>{
     if(fi==='pos' && +s.debito_quote<=0) return false;
     if(fi==='zero' && +s.debito_quote>0) return false;
