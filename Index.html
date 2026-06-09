@@ -500,7 +500,7 @@ tr:hover td{background:#F5FBF7}
               </select>
             </div>
             <div class="ox"><table>
-              <thead><tr><th>Codice</th><th>Cognome</th><th>Nome</th><th>Cat.</th><th>Saldato fino</th><th>Deb. Quote</th><th>Deb. Gadget</th><th>Totale</th><th>Azioni</th></tr></thead>
+      <thead><tr><th>Codice</th><th>Cognome</th><th>Nome</th><th>Cat.</th><th>Saldato fino</th><th>Deb. Quote</th><th>Deb. Gadget</th><th>Totale</th><th>Azioni</th></tr></thead>
               <tbody id="tb-debiti"></tbody>
             </table></div>
           </div>
@@ -570,6 +570,22 @@ tr:hover td{background:#F5FBF7}
               <tbody id="tb-miei-rimborsi"></tbody>
             </table></div>
           </div>
+        </div>
+        <!-- Gadget da pagare -->
+        <div class="card" id="card-deb-gadget" style="display:none">
+          <div class="card-head"><div class="card-title"><i class="ti ti-alert-circle" style="color:var(--red)"></i> Gadget Da Pagare</div></div>
+          <div class="ox"><table>
+            <thead><tr><th>Data</th><th>Gadget</th><th>Qtà</th><th>Dovuto</th><th>Pagato</th><th>Residuo</th><th>Stato</th></tr></thead>
+            <tbody id="tb-deb-gadget"></tbody>
+          </table></div>
+        </div>
+        <!-- Catalogo gadget disponibili -->
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="ti ti-package"></i> Catalogo Gadget Disponibili</div></div>
+          <div class="ox"><table>
+            <thead><tr><th>Codice</th><th>Nome</th><th>Categoria</th><th>Disponibilità</th><th>Prezzo Soci</th></tr></thead>
+            <tbody id="tb-catalogo-gadget"></tbody>
+          </table></div>
         </div>
       </div>
 
@@ -666,6 +682,10 @@ tr:hover td{background:#F5FBF7}
       <div class="form-row">
         <div class="form-group"><label>Debito Quote (€)</label><input id="es-dq" type="number" step="0.01"></div>
         <div class="form-group"><label>Debito Gadget (€)</label><input id="es-dg" type="number" step="0.01"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Data Iscrizione</label><input id="es-data" type="date"></div>
+        <div class="form-group"><label>Nuovo PIN (lascia vuoto per non cambiare)</label><input id="es-pin" type="password" placeholder="Nuovo PIN…" autocomplete="new-password"></div>
       </div>
       <div class="form-group"><label>Note</label><textarea id="es-note" rows="2"></textarea></div>
     </div>
@@ -1168,12 +1188,14 @@ async function editSocio(id) {
   document.getElementById('es-dq').value = data.debito_quote||0;
   document.getElementById('es-dg').value = data.debito_gadget||0;
   document.getElementById('es-note').value = data.note||'';
+  document.getElementById('es-data').value = data.data_iscrizione||'';
+  document.getElementById('es-pin').value = '';
   openModal('modal-socio-edit');
 }
 
 async function updateSocio() {
   const id = document.getElementById('es-id').value;
-  const { error } = await sb.from('soci').update({
+  const updates = {
     nome: document.getElementById('es-nome').value,
     cognome: document.getElementById('es-cognome').value,
     categoria: document.getElementById('es-cat').value,
@@ -1181,8 +1203,12 @@ async function updateSocio() {
     saldato_fino: document.getElementById('es-saldo').value,
     debito_quote: +document.getElementById('es-dq').value||0,
     debito_gadget: +document.getElementById('es-dg').value||0,
+    data_iscrizione: document.getElementById('es-data').value||null,
     note: document.getElementById('es-note').value
-  }).eq('id',id);
+  };
+  const nuovoPin = document.getElementById('es-pin').value;
+  if(nuovoPin) updates.password_hash = await sha256(nuovoPin);
+  const { error } = await sb.from('soci').update(updates).eq('id',id);
   if(error) { toast('Errore: '+error.message,'err'); return; }
   toast('Socio aggiornato!','ok');
   closeModal('modal-socio-edit');
@@ -1416,8 +1442,48 @@ async function loadDebiti() {
       <td style="text-align:right;font-weight:700;color:${+s.debito_quote>0?'var(--red)':'var(--g)'}">€ ${f2(s.debito_quote)}</td>
       <td style="text-align:right;font-weight:700;color:${+s.debito_gadget>0?'var(--red)':'var(--g)'}">€ ${f2(s.debito_gadget)}</td>
       <td style="text-align:right;font-weight:700;color:${tot>0?'var(--red)':'var(--g)'}">€ ${f2(tot)}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="editSocio('${s.id}')"><i class="ti ti-edit"></i></button></td>
-    </tr>`;}).join('') : `<tr><td colspan="9" class="empty">Nessun risultato</td></tr>`;
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="editSocio('${s.id}')"><i class="ti ti-edit"></i></button>
+        ${+s.debito_gadget>0?`<button class="btn btn-ghost btn-sm" onclick="toggleDettaglioGadget('${s.id}','dg-${s.id}')" title="Dettaglio gadget"><i class="ti ti-package"></i></button>`:''}
+      </td>
+    </tr>
+    <tr id="dg-${s.id}" style="display:none"><td colspan="9" style="padding:0;background:#f9fdf9">
+      <div id="dg-body-${s.id}" style="padding:8px 16px;font-size:12px;color:var(--txt3)">
+        <i class="spinner" style="display:inline-block"></i> Caricamento…
+      </div>
+    </td></tr>`;}).join('') : `<tr><td colspan="9" class="empty">Nessun risultato</td></tr>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// DETTAGLIO GADGET PER SOCIO (admin debiti)
+// ═══════════════════════════════════════════════════════
+async function toggleDettaglioGadget(socioId, rowId) {
+  const row = document.getElementById(rowId);
+  const body = document.getElementById('dg-body-'+socioId);
+  if(row.style.display!=='none') { row.style.display='none'; return; }
+  row.style.display='';
+  const { data } = await sb.from('vendite_gadget').select('*').eq('socio_id',socioId).gt('debito_residuo',0).order('data',{ascending:false});
+  if(!data||!data.length) { body.innerHTML='<em>Nessun gadget con debito residuo</em>'; return; }
+  body.innerHTML = `<table style="width:100%;font-size:12px;margin:4px 0">
+    <thead><tr>
+      <th style="padding:4px 8px;text-align:left;color:var(--txt3)">Data</th>
+      <th style="padding:4px 8px;text-align:left;color:var(--txt3)">Gadget</th>
+      <th style="padding:4px 8px;text-align:right;color:var(--txt3)">Qtà</th>
+      <th style="padding:4px 8px;text-align:right;color:var(--txt3)">Dovuto</th>
+      <th style="padding:4px 8px;text-align:right;color:var(--txt3)">Pagato</th>
+      <th style="padding:4px 8px;text-align:right;color:var(--txt3)">Residuo</th>
+      <th style="padding:4px 8px;text-align:left;color:var(--txt3)">Stato</th>
+    </tr></thead>
+    <tbody>${data.map(v=>`<tr>
+      <td style="padding:4px 8px;white-space:nowrap">${v.data}</td>
+      <td style="padding:4px 8px">${v.gadget_nome||'—'}</td>
+      <td style="padding:4px 8px;text-align:right">${v.quantita}</td>
+      <td style="padding:4px 8px;text-align:right">€ ${f2(v.importo_dovuto)}</td>
+      <td style="padding:4px 8px;text-align:right;color:var(--g)">€ ${f2(v.importo_pagato)}</td>
+      <td style="padding:4px 8px;text-align:right;font-weight:700;color:var(--red)">€ ${f2(v.debito_residuo)}</td>
+      <td style="padding:4px 8px">${statoBadge(v.stato)}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1543,9 +1609,11 @@ async function loadPortale() {
     <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Debito Quote</div><div class="kpi-val ${dq>0?'neg':''}">€ ${f2(dq)}</div></div>
     <div class="kpi"><div class="kpi-accent"></div><div class="kpi-label">Debito Gadget</div><div class="kpi-val ${dg>0?'neg':''}">€ ${f2(dg)}</div></div>`;
 
-  const [{ data: gadgets }, { data: rimbs }] = await Promise.all([
+  const [{ data: gadgets }, { data: rimbs }, { data: debGad }, { data: catalogo }] = await Promise.all([
     sb.from('vendite_gadget').select('*').eq('socio_id',s.id).order('data',{ascending:false}),
-    sb.from('rimborsi').select('*').eq('socio_id',s.id).order('data',{ascending:false})
+    sb.from('rimborsi').select('*').eq('socio_id',s.id).order('data',{ascending:false}),
+    sb.from('vendite_gadget').select('*').eq('socio_id',s.id).gt('debito_residuo',0).order('data',{ascending:false}),
+    sb.from('gadget').select('codice,nome,categoria,disponibilita,prezzo_soci').neq('disponibilita','Esaurito').order('nome')
   ]);
 
   document.getElementById('tb-miei-gadget').innerHTML = (gadgets||[]).length ? (gadgets||[]).map(v=>`<tr>
@@ -1564,6 +1632,31 @@ async function loadPortale() {
     <td style="font-weight:700">€ ${f2(r.importo_approvato)}</td>
     <td>${statoBadge(r.stato)}</td>
   </tr>`).join('') : `<tr><td colspan="4" class="empty"><i class="ti ti-cash-banknote"></i>Nessun rimborso</td></tr>`;
+
+  // Gadget da pagare
+  const cardDeb = document.getElementById('card-deb-gadget');
+  if(debGad&&debGad.length>0) {
+    cardDeb.style.display='';
+    document.getElementById('tb-deb-gadget').innerHTML = debGad.map(v=>`<tr>
+      <td style="white-space:nowrap;font-size:12px">${v.data}</td>
+      <td>${v.gadget_nome||'—'}</td>
+      <td style="text-align:right">${v.quantita}</td>
+      <td style="text-align:right">€ ${f2(v.importo_dovuto)}</td>
+      <td style="text-align:right;color:var(--g)">€ ${f2(v.importo_pagato)}</td>
+      <td style="text-align:right;font-weight:700;color:var(--red)">€ ${f2(v.debito_residuo)}</td>
+      <td>${statoBadge(v.stato)}</td>
+    </tr>`).join('');
+  } else { cardDeb.style.display='none'; }
+
+  // Catalogo gadget disponibili
+  const catC = {Gadget:'bb',Abbigliamento:'bp',Patch:'ba',Vino:'bt'};
+  document.getElementById('tb-catalogo-gadget').innerHTML = (catalogo||[]).length ? (catalogo||[]).map(g=>`<tr>
+    <td style="font-weight:700;color:var(--gd);font-size:11px">${g.codice}</td>
+    <td>${g.nome}</td>
+    <td><span class="badge ${catC[g.categoria]||'bgr'}">${g.categoria}</span></td>
+    <td><span class="badge ${g.disponibilita==='Da censire'?'ba':'bg'}">${g.disponibilita||'—'}</span></td>
+    <td style="font-weight:700">€ ${f2(g.prezzo_soci)}</td>
+  </tr>`).join('') : `<tr><td colspan="5" class="empty">Nessun gadget disponibile</td></tr>`;
 }
 
 // ═══════════════════════════════════════════════════════
